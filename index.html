@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mariza Booking - Smart History</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap');
+        body { font-family: 'Kanit', sans-serif; background-color: #fdf2f8; }
+        .card { border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .tab-active { color: #db2777; border-bottom: 3px solid #db2777; }
+        input, select { font-size: 16px !important; }
+        .suggestion-box { z-index: 50; max-height: 150px; overflow-y: auto; }
+    </style>
+</head>
+<body class="p-4 pb-10">
+    <div class="max-w-md mx-auto bg-white card overflow-hidden">
+        <div class="flex border-b text-sm">
+            <button onclick="switchTab('booking')" id="tab-booking" class="flex-1 py-4 font-bold tab-active">หน้าจอง</button>
+            <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-4 font-bold text-gray-400">ประวัติการนัด</button>
+        </div>
+
+        <div class="p-6">
+            <div id="section-booking">
+                <form id="bookingForm" class="space-y-4" autocomplete="off">
+                    <div class="grid grid-cols-2 gap-3">
+                        <select id="msgLang" onchange="updatePreview()" class="rounded-xl border-pink-100 bg-pink-50 p-3 border text-pink-600 font-bold">
+                            <option value="th">🇹🇭 ไทย</option>
+                            <option value="en">🇺🇸 ENG</option>
+                        </select>
+                        <select id="platform" onchange="updatePreview()" class="rounded-xl border-gray-200 bg-gray-50 p-3 border">
+                            <option value="LineOA">LineOA</option>
+                            <option value="FB">FB</option>
+                            <option value="IG">IG</option>
+                        </select>
+                    </div>
+
+                    <div class="relative">
+                        <label class="block text-sm font-medium text-gray-700 text-xs mb-1 uppercase text-gray-400 font-bold">ชื่อลูกค้า *</label>
+                        <input type="text" id="custName" oninput="handleNameInput()" required placeholder="พิมพ์เพื่อหาชื่อเก่า..." class="mt-1 block w-full rounded-xl border-gray-200 border p-3 focus:ring-2 focus:ring-pink-300 outline-none">
+                        <div id="suggestions" class="hidden absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl suggestion-box"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs mb-1 uppercase text-gray-400 font-bold">เบอร์โทรศัพท์ *</label>
+                        <input type="tel" id="custPhone" oninput="updatePreview()" pattern="[0-9]{10}" required placeholder="09xxxxxxxx" class="mt-1 block w-full rounded-xl border-gray-200 border p-3">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 text-xs mb-1 uppercase text-gray-400 font-bold">วันที่นัด *</label>
+                            <input type="date" id="date" onchange="updatePreview()" required class="mt-1 block w-full rounded-xl border-gray-200 border p-3">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 text-xs mb-1 uppercase text-gray-400 font-bold">เวลานัด *</label>
+                            <input type="time" id="time" onchange="updatePreview()" required class="mt-1 block w-full rounded-xl border-gray-200 border p-3">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 text-xs mb-1 uppercase text-gray-400 font-bold">ประเภทงาน</label>
+                        <select id="locationType" onchange="updateDeposit(); updatePreview();" class="mt-1 block w-full rounded-xl border-gray-200 bg-gray-50 p-3 border">
+                            <option value="default">ในสถานที่</option>
+                            <option value="onsite">นอกสถานที่</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                        <input type="text" id="price" oninput="updatePreview()" placeholder="ราคาเต็ม" class="rounded-xl border-gray-200 border p-3">
+                        <input type="number" id="deposit" oninput="updatePreview()" value="500" class="rounded-xl border-gray-200 border p-3 font-bold text-pink-600">
+                    </div>
+
+                    <div class="pt-4 space-y-3">
+                        <button type="button" onclick="generateAndCopy()" class="w-full bg-pink-500 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">คัดลอกข้อความ 📋</button>
+                        <button type="button" onclick="sendToCalendar()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">ลงปฏิทิน & บันทึกประวัติ 🗓️</button>
+                    </div>
+                </form>
+
+                <div class="mt-6 border-t pt-4">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">ตัวอย่างข้อความ</p>
+                    <div id="textPreview" class="bg-gray-50 p-4 rounded-2xl border border-dashed border-gray-300 text-[13px] whitespace-pre-wrap text-gray-500 min-h-[80px]"></div>
+                </div>
+            </div>
+
+            <div id="section-history" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-gray-700 text-sm">รายการนัดล่าสุด</h3>
+                    <button onclick="clearHistory()" class="text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded-lg font-bold">ล้างประวัติ</button>
+                </div>
+                <div id="historyList" class="space-y-3"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxWbGdyKW_3BYxh5oCllczy5hcsUjwZUsqNjpX94a1sPSsh09rylV5Iyn1FhnsLmqja/exec';
+
+    function handleNameInput() {
+        const input = document.getElementById('custName').value.toLowerCase();
+        const suggestionsBox = document.getElementById('suggestions');
+        updatePreview();
+        if (input.length < 1) { suggestionsBox.classList.add('hidden'); return; }
+
+        const history = JSON.parse(localStorage.getItem('marizaHistoryData') || '[]');
+        const matches = history.filter((item, index, self) => 
+            item.name.toLowerCase().includes(input) && 
+            self.findIndex(t => t.name === item.name) === index
+        );
+
+        if (matches.length > 0) {
+            suggestionsBox.innerHTML = '';
+            matches.slice(0, 5).forEach(data => {
+                const div = document.createElement('div');
+                div.className = "p-3 hover:bg-pink-50 cursor-pointer border-b border-gray-50 last:border-0 text-sm flex justify-between";
+                div.innerHTML = `<span class="font-bold text-pink-600">${data.name}</span> <span class="text-gray-400 text-[10px]">${data.phone}</span>`;
+                div.onclick = () => fillData(data);
+                suggestionsBox.appendChild(div);
+            });
+            suggestionsBox.classList.remove('hidden');
+        } else { suggestionsBox.classList.add('hidden'); }
+    }
+
+    function fillData(data) {
+        document.getElementById('custName').value = data.name;
+        document.getElementById('custPhone').value = data.phone;
+        document.getElementById('locationType').value = data.locType;
+        document.getElementById('suggestions').classList.add('hidden');
+        updateDeposit(); updatePreview();
+    }
+
+    function updateDeposit() {
+        const type = document.getElementById('locationType').value;
+        document.getElementById('deposit').value = (type === 'onsite') ? 1000 : 500;
+    }
+
+    function updatePreview() {
+        const { text } = generateData();
+        document.getElementById('textPreview').innerText = text || "รอข้อมูล...";
+    }
+
+    function generateData() {
+        const lang = document.getElementById('msgLang').value;
+        const name = document.getElementById('custName').value || '...';
+        const phone = document.getElementById('custPhone').value || '...';
+        const dateInput = document.getElementById('date').value;
+        const [y, m, d] = dateInput ? dateInput.split('-') : ['xxxx','xx','xx'];
+        const dateStr = `${d}/${m}/${y}`;
+        const time = document.getElementById('time').value || '--:--';
+        const platform = document.getElementById('platform').value;
+        const price = document.getElementById('price').value || 'ราคา';
+        const deposit = document.getElementById('deposit').value;
+        const locType = document.getElementById('locationType').value;
+
+        let text = (lang === 'th') 
+            ? `ยืนยันการจอง💓\nมัดจำ ${deposit} บาท\n\nชื่อ: ${name}\nเบอร์: ${phone}\nบริการ: ต่อขนตา\nวันที่: ${dateStr}\nเวลา: ${time}\n\n`
+            : `Confirm Booking💓\nDeposit: ${deposit} THB\n\nName: ${name}\nPhone: ${phone}\nService: Eyelash\nDate: ${dateStr}\nTime: ${time}\n\n`;
+
+        text += (locType === 'onsite') 
+            ? (lang === 'th' ? `- เวลาคลาดเคลื่อนตามจราจร 🙏\n🥰 พบกันค่า 🫶💖` : `- Traffic may affect time 🙏\n🥰 See you soon! 🫶💖`)
+            : (lang === 'th' ? `- นำรถมาแจ้งห้อง 964\n- รอที่ Lobby ช่างจะไปรับ\n- เลทไม่เกิน 15 นาทีนะคะ 🥰🫶💖` : `- Wait at Lobby.\n- 15 mins late max pls 🥰🫶💖`);
+
+        const calLine = `${name} | ${platform} | ${phone} | ${price}(มัดจำ${deposit}) | ต่อขนตา`;
+        return { text, calLine, name, phone, locType, dateInput, time, dateStr };
+    }
+
+    async function generateAndCopy() {
+        const { text } = generateData();
+        await navigator.clipboard.writeText(text);
+        alert('คัดลอกข้อความแล้ว! ✅');
+    }
+
+    async function sendToCalendar() {
+        const form = document.getElementById('bookingForm');
+        if (!form.checkValidity()) { form.reportValidity(); return; }
+        const data = generateData();
+        saveToHistory(data);
+
+        const formData = new FormData();
+        formData.append('date', data.dateInput);
+        formData.append('time', data.time);
+        formData.append('calendarLine', data.calLine);
+
+        try {
+            await fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
+            alert('ลงปฏิทินสำเร็จ! 🗓️✨');
+            form.reset(); updatePreview();
+        } catch (e) { alert('ส่งไป Calendar ไม่สำเร็จ แต่บันทึกในประวัติแล้ว'); }
+    }
+
+    // --- ส่วนประวัติแบบใหม่ (โชว์วันที่นัด) ---
+    function saveToHistory(data) {
+        let history = JSON.parse(localStorage.getItem('marizaHistoryData') || '[]');
+        history.unshift({ 
+            name: data.name, 
+            phone: data.phone, 
+            locType: data.locType, 
+            line: data.calLine,
+            bookingDate: data.dateStr, // วันที่นัด
+            bookingTime: data.time      // เวลานัด
+        });
+        localStorage.setItem('marizaHistoryData', JSON.stringify(history.slice(0, 100)));
+    }
+
+    function switchTab(tab) {
+        document.getElementById('section-booking').classList.toggle('hidden', tab !== 'booking');
+        document.getElementById('section-history').classList.toggle('hidden', tab === 'booking');
+        document.getElementById('tab-booking').className = tab === 'booking' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
+        document.getElementById('tab-history').className = tab === 'history' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
+        if(tab === 'history') loadHistory();
+    }
+
+    function loadHistory() {
+        const list = document.getElementById('historyList');
+        const history = JSON.parse(localStorage.getItem('marizaHistoryData') || '[]');
+        list.innerHTML = history.length ? '' : '<p class="text-center text-gray-400 py-10">ไม่มีประวัติ</p>';
+        history.forEach(item => {
+            const div = document.createElement('div');
+            div.className = "p-3 bg-pink-50 rounded-xl text-[11px] text-pink-800 border border-pink-100 shadow-sm";
+            div.innerHTML = `<div class="flex justify-between font-bold mb-1 border-b border-pink-200 pb-1">
+                                <span>🗓️ ${item.bookingDate}</span>
+                                <span>⏰ ${item.bookingTime}</span>
+                             </div>
+                             <div class="pt-1">${item.line}</div>`;
+            list.appendChild(div);
+        });
+    }
+
+    function clearHistory() { if(confirm('ล้างประวัติทั้งหมด?')) { localStorage.removeItem('marizaHistoryData'); loadHistory(); } }
+</script>
+</body>
+</html>
