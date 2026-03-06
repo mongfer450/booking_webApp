@@ -12,9 +12,10 @@
         .tab-active { color: #db2777; border-bottom: 3px solid #db2777; transition: all 0.3s; }
         input, select { font-size: 16px !important; }
         .suggestion-box { z-index: 50; max-height: 150px; overflow-y: auto; }
-        /* Loader แบบใหม่ที่เบาและลื่นกว่าเดิม */
-        .fast-loader { border: 3px solid #f3f3f3; border-top: 3px solid #db2777; border-radius: 50%; width: 24px; height: 24px; animation: spin 0.8s linear infinite; }
+        .fast-loader { border: 3px solid #f3f3f3; border-top: 3px solid #db2777; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* ปรับเงาของกล่องคิว */
+        .queue-item { border-radius: 20px; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.03); border: 1px solid #fce7f3; }
     </style>
 </head>
 <body class="p-4 pb-10">
@@ -29,11 +30,11 @@
             <div id="section-booking">
                 <form id="bookingForm" class="space-y-4" autocomplete="off">
                     <div class="grid grid-cols-2 gap-3">
-                        <select id="msgLang" onchange="updatePreview()" class="rounded-xl border-pink-100 bg-pink-50 p-3 border text-pink-600 font-bold">
+                        <select id="msgLang" onchange="updatePreview()" class="rounded-xl border-pink-100 bg-pink-50 p-3 border text-pink-600 font-bold text-sm">
                             <option value="th">🇹🇭 ไทย</option>
                             <option value="en">🇺🇸 ENG</option>
                         </select>
-                        <select id="platform" onchange="updatePreview()" class="rounded-xl border-gray-200 bg-gray-50 p-3 border">
+                        <select id="platform" onchange="updatePreview()" class="rounded-xl border-gray-200 bg-gray-50 p-3 border text-sm">
                             <option value="LineOA">LineOA</option>
                             <option value="FB">FB</option>
                             <option value="IG">IG</option>
@@ -41,35 +42,36 @@
                     </div>
 
                     <div class="relative">
-                        <label class="block text-xs mb-1 uppercase text-gray-400 font-bold">ชื่อลูกค้า *</label>
-                        <input type="text" id="custName" oninput="handleNameInput()" required placeholder="พิมพ์เพื่อหาชื่อเก่า..." class="mt-1 block w-full rounded-xl border-gray-200 border p-3 focus:ring-2 focus:ring-pink-300 outline-none">
-                        <div id="suggestions" class="hidden absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl suggestion-box"></div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs mb-1 uppercase text-gray-400 font-bold">เบอร์โทรศัพท์ *</label>
-                        <input type="tel" id="custPhone" oninput="updatePreview()" pattern="[0-9]{10}" required placeholder="09xxxxxxxx" class="mt-1 block w-full rounded-xl border-gray-200 border p-3">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs mb-1 uppercase text-gray-400 font-bold">บริการ/Service</label>
-                        <input type="text" id="serviceType" oninput="updatePreview()" placeholder="ต่อขนตา (Default)" class="mt-1 block w-full rounded-xl border-gray-200 border p-3">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">ชื่อลูกค้า *</label>
+                        <input type="text" id="custName" oninput="handleNameInput()" required placeholder="พิมพ์ชื่อ..." class="w-full rounded-xl border-gray-200 border p-3 outline-none focus:border-pink-300">
+                        <div id="suggestions" class="hidden absolute left-0 right-0 mt-1 bg-white border rounded-xl shadow-xl suggestion-box"></div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs mb-1 uppercase text-gray-400 font-bold">วันที่นัด *</label>
-                            <input type="date" id="date" onchange="updatePreview()" required class="mt-1 block w-full rounded-xl border-gray-200 border p-3">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">เบอร์โทรศัพท์ *</label>
+                            <input type="tel" id="custPhone" oninput="updatePreview()" pattern="[0-9]{10}" required placeholder="09xxxxxxxx" class="w-full rounded-xl border-gray-200 border p-3">
                         </div>
                         <div>
-                            <label class="block text-xs mb-1 uppercase text-gray-400 font-bold">เวลานัด *</label>
-                            <input type="time" id="time" onchange="updatePreview()" required class="mt-1 block w-full rounded-xl border-gray-200 border p-3">
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">บริการ (Service)</label>
+                            <input type="text" id="serviceType" oninput="updatePreview()" placeholder="ต่อขนตา" class="w-full rounded-xl border-gray-200 border p-3">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">วันที่นัด *</label>
+                            <input type="date" id="date" onchange="updatePreview()" required class="w-full rounded-xl border-gray-200 border p-3 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">เวลานัด *</label>
+                            <input type="time" id="time" onchange="updatePreview()" required class="w-full rounded-xl border-gray-200 border p-3 text-sm">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs mb-1 uppercase text-gray-400 font-bold">ประเภทงาน</label>
-                        <select id="locationType" onchange="updateDeposit(); updatePreview();" class="mt-1 block w-full rounded-xl border-gray-200 bg-gray-50 p-3 border font-bold">
+                        <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">ประเภทงาน</label>
+                        <select id="locationType" onchange="updateDeposit(); updatePreview();" class="w-full rounded-xl border-gray-200 bg-gray-50 p-3 border font-bold">
                             <option value="default">ในสถานที่</option>
                             <option value="onsite">นอกสถานที่</option>
                         </select>
@@ -80,9 +82,9 @@
                         <input type="number" id="deposit" oninput="updatePreview()" value="500" class="rounded-xl border-gray-200 border p-3 font-bold text-pink-600">
                     </div>
 
-                    <div class="pt-4 space-y-3">
-                        <button type="button" onclick="generateAndCopy()" class="w-full bg-pink-500 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">คัดลอกข้อความ 📋</button>
-                        <button type="button" id="btnSave" onclick="sendToCalendar()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition">ลงปฏิทิน & บันทึก 🗓️</button>
+                    <div class="pt-2 space-y-3">
+                        <button type="button" onclick="generateAndCopy()" class="w-full bg-pink-500 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all">คัดลอกข้อความ 📋</button>
+                        <button type="button" id="btnSave" onclick="sendToCalendar()" class="w-full bg-slate-800 text-white font-bold py-4 rounded-2xl active:scale-95 transition-all">ลงปฏิทิน & บันทึก 🗓️</button>
                     </div>
                 </form>
 
@@ -92,33 +94,28 @@
                 </div>
             </div>
 
-            <div id="section-history" class="hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-gray-700 text-sm">รายการนัดล่าสุด</h3>
-                    <button onclick="clearHistory()" class="text-[10px] text-red-500 bg-red-50 px-2 py-1 rounded-lg font-bold">ล้างประวัติ</button>
+            <div id="section-queue" class="hidden space-y-4">
+                <div class="bg-pink-50 p-4 rounded-2xl">
+                    <div class="flex gap-2">
+                        <input type="date" id="queueDateFilter" onchange="fetchGoogleQueue()" class="flex-1 rounded-xl border-pink-100 border p-2 text-sm focus:outline-none">
+                        <button onclick="fetchGoogleQueue()" class="bg-pink-500 text-white px-4 rounded-xl text-xs font-bold">🔄</button>
+                    </div>
                 </div>
-                <div id="historyList" class="space-y-3"></div>
+                <div id="queueList" class="space-y-3"></div>
             </div>
 
-            <div id="section-queue" class="hidden">
-                <div class="space-y-4">
-                    <div class="bg-pink-50 p-4 rounded-2xl">
-                        <label class="block text-[10px] font-bold text-pink-400 uppercase mb-1">เลือกวันที่ดูคิว</label>
-                        <div class="flex gap-2">
-                            <input type="date" id="queueDateFilter" onchange="fetchGoogleQueue()" class="flex-1 rounded-xl border-pink-100 border p-2 text-sm focus:outline-none">
-                            <button onclick="fetchGoogleQueue()" class="bg-pink-500 text-white px-4 rounded-xl text-xs font-bold">🔄</button>
-                        </div>
-                    </div>
-                    <div id="queueList" class="space-y-3"></div>
+            <div id="section-history" class="hidden space-y-3">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold text-gray-700 text-sm">รายการล่าสุด</h3>
+                    <button onclick="clearHistory()" class="text-[10px] text-red-500 font-bold">ล้างประวัติ</button>
                 </div>
+                <div id="historyList" class="space-y-3"></div>
             </div>
         </div>
     </div>
 
 <script>
     const scriptURL = 'https://script.google.com/macros/s/AKfycbwmM7ck23L33kK_sjG_Fla3Ka5eDAbfJMsQmVED4cQAj8u8isASx7XLH7j0flYEa7-I/exec';
-    
-    // --- ระบบ Memory Cache เพื่อความเร็วแสง ---
     let queueCache = {}; 
 
     function switchTab(tab) {
@@ -138,7 +135,6 @@
         }
     }
 
-    // --- Suggestion ระบบเดิม ---
     function handleNameInput() {
         const input = document.getElementById('custName').value.toLowerCase();
         const suggestionsBox = document.getElementById('suggestions');
@@ -150,14 +146,11 @@
             self.findIndex(t => t.name === item.name) === index
         );
         if (matches.length > 0) {
-            suggestionsBox.innerHTML = '';
-            matches.slice(0, 5).forEach(data => {
-                const div = document.createElement('div');
-                div.className = "p-3 hover:bg-pink-50 cursor-pointer border-b border-gray-50 last:border-0 text-sm flex justify-between";
-                div.innerHTML = `<span class="font-bold text-pink-600">${data.name}</span> <span class="text-gray-400 text-[10px]">${data.phone}</span>`;
-                div.onclick = () => fillData(data);
-                suggestionsBox.appendChild(div);
-            });
+            suggestionsBox.innerHTML = matches.slice(0, 5).map(data => `
+                <div onclick="fillData({name:'${data.name}', phone:'${data.phone}', locType:'${data.locType}'})" class="p-3 hover:bg-pink-50 cursor-pointer border-b border-gray-50 last:border-0 text-sm flex justify-between items-center">
+                    <span class="font-bold text-pink-600">${data.name}</span> <span class="text-gray-400 text-[10px]">${data.phone}</span>
+                </div>
+            `).join('');
             suggestionsBox.classList.remove('hidden');
         } else { suggestionsBox.classList.add('hidden'); }
     }
@@ -175,7 +168,6 @@
         document.getElementById('deposit').value = (type === 'onsite') ? 1000 : 500;
     }
 
-    // --- จัดการข้อความจอง (เพิ่ม Service) ---
     function generateData() {
         const lang = document.getElementById('msgLang').value;
         const name = document.getElementById('custName').value || '...';
@@ -196,7 +188,7 @@
 
         text += (locType === 'onsite') 
             ? (lang === 'th' ? `- เวลาอาจคลาดเคลื่อนตามการจราจรค่า🙏\n🥰 แล้วพบกันค่า 🫶💖` : `- Traffic may affect time ka🙏\n🥰 See you soon! 🫶💖`)
-            : (lang === 'th' ? `- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ🥰 แล้วพบกันนะค่า🫶💖` : `- if have car tell Room 964 ka\n- Please Wait at Lobby ka💖.\n- 15 mins late max pls 🥰 see you ka🫶💖`);
+            : (lang === 'th' ? `- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ🥰 แล้วพบกันนะค่า🫶💖` : `- Room 964 ka\n- Wait at Lobby ka💖\n- Late max 15 mins ka🫶💖`);
 
         const calLine = `${name} | ${platform} | ${phone} | ${price}(มัดจำ${deposit}) | ${service}`;
         return { text, calLine, name, phone, locType, dateInput, time, dateStr };
@@ -210,14 +202,14 @@
     async function generateAndCopy() {
         const { text } = generateData();
         await navigator.clipboard.writeText(text);
-        alert('คัดลอกข้อความแล้ว! ✅');
+        alert('คัดลอกเรียบร้อย! ✅');
     }
 
     async function sendToCalendar() {
         const form = document.getElementById('bookingForm');
         if (!form.checkValidity()) { form.reportValidity(); return; }
         const btn = document.getElementById('btnSave');
-        btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
+        btn.innerHTML = '<div class="fast-loader mx-auto"></div>'; btn.disabled = true;
         const data = generateData();
         saveToHistory(data);
         const formData = new FormData();
@@ -226,15 +218,13 @@
         formData.append('calendarLine', data.calLine);
         try {
             await fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
-            alert('ลงปฏิทินสำเร็จ! 🗓️✨');
-            // ล้าง cache ของวันที่จองเพื่อให้โหลดใหม่เมื่อไปหน้าคิว
+            alert('ลงปฏิทินสำเร็จ! 🗓️');
             delete queueCache[data.dateInput];
             form.reset(); updatePreview();
-        } catch (e) { alert('สำเร็จ (บันทึกในประวัติแล้ว)'); }
+        } catch (e) { alert('ส่งไม่สำเร็จ'); }
         finally { btn.innerText = "ลงปฏิทิน & บันทึก 🗓️"; btn.disabled = false; }
     }
 
-    // --- ระบบประวัติ ---
     function saveToHistory(data) {
         let history = JSON.parse(localStorage.getItem('marizaHistoryData') || '[]');
         history.unshift({ name: data.name, phone: data.phone, locType: data.locType, line: data.calLine, bookingDate: data.dateStr, bookingTime: data.time });
@@ -244,43 +234,27 @@
     function loadHistory() {
         const list = document.getElementById('historyList');
         const history = JSON.parse(localStorage.getItem('marizaHistoryData') || '[]');
-        list.innerHTML = history.length ? '' : '<p class="text-center text-gray-400 py-10">ไม่มีประวัติ</p>';
-        list.innerHTML = history.map(item => `
-            <div class="p-3 bg-pink-50 rounded-xl text-[11px] text-pink-800 border border-pink-100 shadow-sm">
-                <div class="flex justify-between font-bold mb-1 border-b border-pink-200 pb-1">
-                    <span>🗓️ ${item.bookingDate}</span> <span>⏰ ${item.bookingTime}</span>
-                </div>
-                <div class="pt-1">${item.line}</div>
+        list.innerHTML = history.length ? history.map(item => `
+            <div class="p-3 bg-pink-50 rounded-xl text-[11px] border border-pink-100 shadow-sm flex justify-between items-center">
+                <div class="truncate mr-2"><span class="font-bold">${item.name}</span> | ${item.line}</div>
+                <button onclick="navigator.clipboard.writeText('${item.line}'); alert('คัดลอกแล้ว!')" class="text-pink-600 font-bold">📋</button>
             </div>
-        `).join('');
+        `).join('') : '<p class="text-center py-10 text-gray-300 text-xs">ไม่มีข้อมูล</p>';
     }
 
-    function clearHistory() { if(confirm('ล้างประวัติทั้งหมด?')) { localStorage.removeItem('marizaHistoryData'); loadHistory(); } }
+    function clearHistory() { if(confirm('ล้างทั้งหมด?')) { localStorage.removeItem('marizaHistoryData'); loadHistory(); } }
 
-    // --- ระบบดึงคิว (Optimized: Fast Fetch & Memory Cache) ---
     async function fetchGoogleQueue() {
         const list = document.getElementById('queueList');
         const selectedDate = document.getElementById('queueDateFilter').value;
-        
-        // 1. ถ้ามีข้อมูลใน Cache ให้โชว์ทันที (ความเร็ว 0s)
-        if (queueCache[selectedDate]) {
-            renderQueue(queueCache[selectedDate]);
-            // แอบอัปเดตข้อมูลใหม่เงียบๆ ข้างหลัง (Background Sync)
-            silentUpdate(selectedDate);
-            return;
-        }
-
-        // 2. ถ้าไม่มีใน Cache ให้โชว์ Loader
+        if (queueCache[selectedDate]) { renderQueue(queueCache[selectedDate]); silentUpdate(selectedDate); return; }
         list.innerHTML = '<div class="flex justify-center py-10"><div class="fast-loader"></div></div>';
-        
         try {
             const response = await fetch(`${scriptURL}?action=getQueue&date=${selectedDate}`);
             const data = await response.json();
-            queueCache[selectedDate] = data; // เก็บลง Cache
+            queueCache[selectedDate] = data;
             renderQueue(data);
-        } catch (e) {
-            list.innerHTML = '<p class="text-center text-red-400 py-10 text-[10px]">❌ ดึงข้อมูลไม่สำเร็จ</p>';
-        }
+        } catch (e) { list.innerHTML = '<p class="text-center py-10 text-red-400">Error Loading.</p>'; }
     }
 
     async function silentUpdate(date) {
@@ -288,80 +262,45 @@
             const response = await fetch(`${scriptURL}?action=getQueue&date=${date}`);
             const data = await response.json();
             queueCache[date] = data;
-            renderQueue(data); // อัปเดต UI ทันทีที่ข้อมูลมาถึง
+            renderQueue(data);
         } catch (e) {}
     }
 
     function renderQueue(data) {
         const list = document.getElementById('queueList');
-        const selectedDate = document.getElementById('queueDateFilter').value;
-        if (!data || data.length === 0) {
-            list.innerHTML = `<p class="text-center text-gray-400 py-10 text-xs font-bold">ไม่มีคิวงานวันที่ ${selectedDate}</p>`;
-            return;
-        }
+        if (!data || data.length === 0) { list.innerHTML = '<p class="text-center py-10 text-gray-400 text-xs">ไม่มีคิวงาน</p>'; return; }
 
         list.innerHTML = data.map((item, index) => {
             const isDone = item.status === "DONE";
-            const fullText = item.title; 
-            const parts = fullText.split(' | ');
-            const name = parts[0] || 'ไม่ระบุชื่อ';
-            const platform = parts[1] || '-';
-            const phone = parts[2] || '-';
-            const price = parts[3] || '-';
-            const service = parts[4] || 'งานบริการ';
-
+            const parts = item.title.split(' | ');
             return `
-                <div class="overflow-hidden rounded-2xl border mb-3 transition-all ${isDone ? 'bg-gray-50 border-gray-200 opacity-60' : 'bg-white border-pink-50 shadow-sm'}">
+                <div class="queue-item overflow-hidden transition-all ${isDone ? 'bg-gray-50 opacity-60' : 'bg-white'}">
                     <div onclick="toggleAccordion('desc-${index}')" class="p-4 flex justify-between items-center cursor-pointer active:bg-pink-50">
                         <div class="flex gap-3 items-center overflow-hidden">
-                            <div class="${isDone ? 'text-gray-400 bg-gray-200' : 'text-pink-600 bg-pink-50'} font-bold text-xs p-2 rounded-xl min-w-[55px] text-center">
-                                ${item.startTime}
-                            </div>
+                            <div class="${isDone ? 'text-gray-400 bg-gray-200' : 'text-pink-600 bg-pink-50'} font-bold text-xs p-2 rounded-xl min-w-[55px] text-center">${item.startTime}</div>
                             <div class="overflow-hidden">
-                                <div class="text-gray-800 font-bold text-sm truncate ${isDone ? 'line-through' : ''}">${name}</div>
-                                <div class="text-[10px] text-gray-400 truncate w-full max-w-[180px]">
-                                    ${fullText}
-                                </div>
+                                <div class="text-gray-800 font-bold text-sm truncate ${isDone ? 'line-through' : ''}">${parts[0] || 'Unknown'}</div>
+                                <div class="text-[10px] text-gray-400 truncate w-full max-w-[150px]">${item.title}</div>
                             </div>
                         </div>
-                        <button onclick="event.stopPropagation(); toggleStatus('${item.id}', '${item.status}')" 
-                            class="p-2 rounded-full transition-colors flex-shrink-0 ${isDone ? 'bg-green-500 text-white' : 'bg-pink-100 text-pink-500'}">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                            </svg>
+                        <button onclick="event.stopPropagation(); toggleStatus('${item.id}', '${item.status}')" class="p-2 rounded-full ${isDone ? 'bg-green-500 text-white' : 'bg-pink-100 text-pink-500'}">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
                         </button>
                     </div>
                     <div id="desc-${index}" class="hidden bg-pink-50/20 border-t border-dashed border-pink-100 p-4">
                         <div class="grid grid-cols-2 gap-3 text-[11px]">
-                            <div class="bg-white p-2 rounded-lg border border-pink-50">
-                                <span class="text-gray-400 block mb-1 uppercase text-[9px]">Platform</span>
-                                <span class="text-gray-700 font-bold">${platform}</span>
-                            </div>
-                            <div class="bg-white p-2 rounded-lg border border-pink-50">
-                                <span class="text-gray-400 block mb-1 uppercase text-[9px]">Phone</span>
-                                <span class="text-gray-700 font-bold">${phone}</span>
-                            </div>
-                            <div class="bg-white p-2 rounded-lg border border-pink-50">
-                                <span class="text-gray-400 block mb-1 uppercase text-[9px]">Price</span>
-                                <span class="text-pink-600 font-bold">${price}</span>
-                            </div>
-                            <div class="bg-white p-2 rounded-lg border border-pink-50">
-                                <span class="text-gray-400 block mb-1 uppercase text-[9px]">Service</span>
-                                <span class="text-gray-700 font-bold">${service}</span>
-                            </div>
+                            <div class="bg-white p-2 rounded-lg border border-pink-50"><span class="text-gray-400 block text-[9px]">Phone</span><span class="text-gray-700 font-bold">${parts[2] || '-'}</span></div>
+                            <div class="bg-white p-2 rounded-lg border border-pink-50"><span class="text-gray-400 block text-[9px]">Price</span><span class="text-pink-600 font-bold">${parts[3] || '-'}</span></div>
+                            <div class="bg-white p-2 rounded-lg border border-pink-50"><span class="text-gray-400 block text-[9px]">Platform</span><span class="text-gray-700 font-bold">${parts[1] || '-'}</span></div>
+                            <div class="bg-white p-2 rounded-lg border border-pink-50"><span class="text-gray-400 block text-[9px]">Service</span><span class="text-gray-700 font-bold">${parts[4] || '-'}</span></div>
                         </div>
-                        <div class="mt-3 bg-gray-800 text-gray-300 p-2 rounded-lg text-[9px] font-mono break-all select-all">
-                            ${fullText}
-                        </div>
+                        <div class="mt-3 bg-gray-800 text-gray-300 p-2 rounded-lg text-[9px] font-mono break-all select-all">${item.title}</div>
                     </div>
-                </div>
-            `;
+                </div>`;
         }).join('');
     }
 
-    function toggleAccordion(id) {
-        document.getElementById(id).classList.toggle('hidden');
-    }
+    function toggleAccordion(id) { document.getElementById(id).classList.toggle('hidden'); }
 
     async function toggleStatus(eventId, currentStatus) {
         const newStatus = (currentStatus === "DONE") ? "[WAIT]" : "[DONE]";
@@ -371,11 +310,10 @@
         formData.append('status', newStatus);
         try {
             await fetch(scriptURL, { method: 'POST', body: formData, mode: 'no-cors' });
-            // ล้าง Cache เฉพาะวันที่เลือกเพื่อให้ Fetch ใหม่
             const selectedDate = document.getElementById('queueDateFilter').value;
             delete queueCache[selectedDate];
             fetchGoogleQueue();
-        } catch (e) { alert("เปลี่ยนสถานะไม่สำเร็จ"); }
+        } catch (e) { alert("Error"); }
     }
 </script>
 </body>
