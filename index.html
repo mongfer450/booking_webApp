@@ -157,8 +157,8 @@
             : `Confirm Booking💓\nDeposit: ${deposit} THB\n\nName: ${name}\nPhone: ${phone}\nService: Eyelash\nDate: ${dateStr}\nTime: ${time}\n\n`;
 
         text += (locType === 'onsite') 
-            ? (lang === 'th' ? `- เวลาคลาดเคลื่อนตามจราจร 🙏\n🥰 พบกันค่า 🫶💖` : `- Traffic may affect time 🙏\n🥰 See you soon! 🫶💖`)
-            : (lang === 'th' ? `- นำรถมาแจ้งห้อง 964\n- รอที่ Lobby ช่างจะไปรับ\n- เลทไม่เกิน 15 นาทีนะคะ 🥰🫶💖` : `- Wait at Lobby.\n- 15 mins late max pls 🥰🫶💖`);
+            ? (lang === 'th' ? `- เวลาอาจคลาดเคลื่อนตามการจราจรค่า🙏\n🥰 แล้วพบกันค่า 🫶💖` : `- Traffic may affect time ka🙏\n🥰 See you soon! 🫶💖`)
+            : (lang === 'th' ? `- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ 🥰แล้วพบกันนะค่า 🫶💖` : `- Please Wait at Lobby ka💖.\n- 15 mins late max pls 🥰🫶💖`);
 
         const calLine = `${name} | ${platform} | ${phone} | ${price}(มัดจำ${deposit}) | ต่อขนตา`;
         return { text, calLine, name, phone, locType, dateInput, time, dateStr };
@@ -202,7 +202,7 @@
         localStorage.setItem('marizaHistoryData', JSON.stringify(history.slice(0, 100)));
     }
 
-    function switchTab(tab) {
+    function switchTab(tab) {f
         document.getElementById('section-booking').classList.toggle('hidden', tab !== 'booking');
         document.getElementById('section-history').classList.toggle('hidden', tab === 'booking');
         document.getElementById('tab-booking').className = tab === 'booking' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
