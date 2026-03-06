@@ -202,7 +202,7 @@
         localStorage.setItem('marizaHistoryData', JSON.stringify(history.slice(0, 100)));
     }
 
-    function switchTab(tab) {f
+    function switchTab(tab) {
         document.getElementById('section-booking').classList.toggle('hidden', tab !== 'booking');
         document.getElementById('section-history').classList.toggle('hidden', tab === 'booking');
         document.getElementById('tab-booking').className = tab === 'booking' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
