@@ -118,22 +118,55 @@
     const scriptURL = 'https://script.google.com/macros/s/AKfycbx20F0KgpD1n6O9xoHGozx0dWYUEv_kjqYHFJLBUqnjS_jxJ1W7iPlWpUKfYYERBy8N/exec';
     let queueCache = {}; 
 
-    function switchTab(tab) {
-        document.getElementById('section-booking').classList.toggle('hidden', tab !== 'booking');
-        document.getElementById('section-queue').classList.toggle('hidden', tab !== 'queue');
-        document.getElementById('section-history').classList.toggle('hidden', tab !== 'history');
-        
-        document.getElementById('tab-booking').className = tab === 'booking' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
-        document.getElementById('tab-queue').className = tab === 'queue' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
-        document.getElementById('tab-history').className = tab === 'history' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
-        
-        if(tab === 'history') loadHistory();
-        if(tab === 'queue') {
-            const qDate = document.getElementById('queueDateFilter');
-            if(!qDate.value) qDate.value = new Date().toISOString().split('T')[0];
-            fetchGoogleQueue();
+    // --- ส่วนที่แก้ไขและเพิ่มเติม ---
+
+function switchTab(tab) {
+    document.getElementById('section-booking').classList.toggle('hidden', tab !== 'booking');
+    document.getElementById('section-queue').classList.toggle('hidden', tab !== 'queue');
+    document.getElementById('section-history').classList.toggle('hidden', tab !== 'history');
+    
+    document.getElementById('tab-booking').className = tab === 'booking' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
+    document.getElementById('tab-queue').className = tab === 'queue' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
+    document.getElementById('tab-history').className = tab === 'history' ? 'flex-1 py-4 font-bold tab-active' : 'flex-1 py-4 font-bold text-gray-400';
+    
+    if(tab === 'history') loadHistory();
+    if(tab === 'queue') {
+        const qDate = document.getElementById('queueDateFilter');
+        // ตั้งค่าวันที่ให้เป็นวันนี้ (Bangkok Time) หากยังไม่มีการเลือกวันที่
+        if(!qDate.value) {
+            const now = new Date();
+            const bangkokTime = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Bangkok',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            }).format(now);
+            qDate.value = bangkokTime;
         }
+        fetchGoogleQueue();
     }
+}
+
+async function fetchGoogleQueue() {
+    const list = document.getElementById('queueList');
+    const selectedDate = document.getElementById('queueDateFilter').value;
+    
+    // แสดง Loader ระหว่างโหลด
+    list.innerHTML = '<div class="flex justify-center py-10"><div class="fast-loader"></div></div>';
+
+    // บังคับลบ Cache เฉพาะตอนกดปุ่มหรือเปลี่ยนวันที่ เพื่อให้ Refresh ทำงานได้จริง
+    delete queueCache[selectedDate];
+
+    try {
+        // เพิ่ม Timestamp เพื่อป้องกัน Browser แคช URL
+        const response = await fetch(`${scriptURL}?action=getQueue&date=${selectedDate}&_=${new Date().getTime()}`);
+        const data = await response.json();
+        queueCache[selectedDate] = data;
+        renderQueue(data);
+    } catch (e) { 
+        list.innerHTML = '<p class="text-center py-10 text-red-400">ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่</p>'; 
+    }
+}
 
     function handleNameInput() {
         const input = document.getElementById('custName').value.toLowerCase();
