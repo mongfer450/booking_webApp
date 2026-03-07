@@ -29,7 +29,7 @@
       </div>
 
       <div class="p-6">
-        <div id="section-booking" class="animate-fadeIn">
+        <div id="section-booking">
           <form id="bookingForm" class="space-y-5" autocomplete="off">
             <div class="grid grid-cols-2 gap-3 pb-2">
               <div class="relative custom-select-wrapper">
@@ -49,22 +49,13 @@
 
             <div class="bg-white rounded-3xl border border-slate-100 p-4 shadow-sm space-y-4">
               <div class="relative">
-                <label class="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5">
-                  <span>👤</span> ชื่อลูกค้า <span class="text-pink-500">*</span>
-                </label>
-                <input type="text" id="custName" oninput="handleNameInput()" required placeholder="ระบุชื่อลูกค้า..." 
-                  class="w-full rounded-xl border-[#e2e8f0] border-2 p-3.5 bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-50 transition-all text-lg font-medium" />
+                <label class="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5">👤 ชื่อลูกค้า <span class="text-pink-500">*</span></label>
+                <input type="text" id="custName" oninput="handleNameInput()" required placeholder="ระบุชื่อลูกค้า..." class="w-full rounded-xl border-[#e2e8f0] border-2 p-3.5 bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-50 transition-all text-lg font-medium" />
                 <div id="suggestions" class="hidden absolute left-0 right-0 z-20 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto"></div>
               </div>
-
               <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5 block">📱 เบอร์โทรศัพท์</label>
-                  <input type="tel" id="custPhone" oninput="validatePhone(this); updatePreview();" required placeholder="09xxxxxxxx" maxlength="10" 
-                    class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white focus:border-slate-400 transition-all" />
-                </div>
+                <input type="tel" id="custPhone" oninput="validatePhone(this); updatePreview();" required placeholder="เบอร์โทรศัพท์" maxlength="10" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white focus:border-slate-400" />
                 <div class="relative custom-select-wrapper">
-                  <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5 block">📍 สถานที่</label>
                   <select id="locationType" onchange="updateDeposit(); updatePreview();" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 font-bold bg-[#f8fafc]">
                     <option value="default">🏠 ในสถานที่</option>
                     <option value="onsite">🚗 นอกสถานที่</option>
@@ -74,67 +65,33 @@
             </div>
 
             <div class="bg-[#f8fafc] rounded-3xl p-4 space-y-4 border border-slate-50">
-              <div>
-                <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5 block">✂️ บริการที่ได้รับ</label>
-                <input type="text" id="serviceType" oninput="updatePreview()" placeholder="ต่อขนตา" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white focus:border-slate-400" />
-              </div>
-
+              <input type="text" id="serviceType" oninput="updatePreview()" placeholder="บริการ (เช่น ต่อขนตา)" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white" />
               <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5 block">📅 วันที่นัด</label>
-                  <input type="date" id="date" onchange="updatePreview()" required class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white text-sm font-medium focus:border-slate-400" />
-                </div>
-                <div>
-                  <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5 block">⏰ เวลานัด</label>
-                  <input type="time" id="time" onchange="updatePreview()" required class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white text-sm font-medium focus:border-slate-400" />
-                </div>
+                <input type="date" id="date" onchange="updatePreview()" required class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white text-sm" />
+                <input type="time" id="time" onchange="updatePreview()" required class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white text-sm" />
               </div>
-
-              <div class="grid grid-cols-2 gap-4 border-t border-slate-200 pt-4">
-                <div class="relative">
-                  <label class="text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5 block">ราคาเต็ม</label>
-                  <div class="relative">
-                    <span class="absolute left-3 top-3.5 text-slate-400 text-sm">฿</span>
-                    <input type="number" id="price" oninput="updatePreview()" placeholder="0" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 pl-7 bg-white focus:border-slate-400" />
-                  </div>
-                </div>
-                <div class="relative">
-                  <label class="text-[11px] font-bold text-pink-500 uppercase ml-1 mb-1.5 block">มัดจำ</label>
-                  <div class="relative">
-                    <span class="absolute left-3 top-3.5 text-pink-400 text-sm">฿</span>
-                    <input type="number" id="deposit" oninput="updatePreview()" value="500" class="w-full rounded-xl border-pink-200 border-2 p-3.5 pl-7 font-bold text-pink-600 bg-white focus:border-pink-400" />
-                  </div>
-                </div>
+              <div class="grid grid-cols-2 gap-4 border-t pt-4">
+                <input type="number" id="price" oninput="updatePreview()" placeholder="ราคาเต็ม" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white" />
+                <input type="number" id="deposit" oninput="updatePreview()" value="500" class="w-full rounded-xl border-pink-200 border-2 p-3.5 font-bold text-pink-600 bg-white" />
               </div>
             </div>
 
             <div class="grid grid-cols-1 gap-3 pt-2">
-              <button type="button" onclick="generateAndCopy()" class="w-full bg-white border-2 border-pink-500 text-pink-600 font-bold py-4 rounded-2xl active:opacity-70 transition-all flex items-center justify-center gap-2 shadow-sm">คัดลอกข้อความ 📋</button>
-              <button type="button" id="btnSave" onclick="sendToCalendar()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl active:opacity-70 transition-all flex items-center justify-center gap-2 shadow-lg">ลงปฏิทิน & บันทึก 🗓️</button>
+              <button type="button" onclick="generateAndCopy()" class="w-full bg-white border-2 border-pink-500 text-pink-600 font-bold py-4 rounded-2xl active:opacity-70">คัดลอกข้อความ 📋</button>
+              <button type="button" id="btnSave" onclick="sendToCalendar()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl active:opacity-70">ลงปฏิทิน & บันทึก 🗓️</button>
             </div>
           </form>
 
-          <div class="mx-4 mt-2 mb-8 bg-white rounded-3xl p-5 border-2 border-dashed border-slate-200">
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Message Preview</p>
-              <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-600 text-[9px] font-bold">Auto-sync</span>
-            </div>
-            <div id="textPreview" class="text-[14px] leading-relaxed whitespace-pre-wrap text-slate-500 italic min-h-[60px]">ระบุชื่อลูกค้าเพื่อสร้างข้อความ...</div>
-          </div>
+          <div id="textPreview" class="mx-4 mt-6 mb-8 bg-white rounded-3xl p-5 border-2 border-dashed border-slate-200 text-sm leading-relaxed whitespace-pre-wrap text-slate-500 italic">ระบุข้อมูล...</div>
         </div>
 
         <div id="section-queue" class="hidden space-y-4">
-          <div class="bg-pink-50 p-4 rounded-2xl border border-pink-100">
-            <input type="date" id="queueDateFilter" onchange="fetchQueue(true)" class="w-full rounded-xl border-pink-100 border p-2 text-sm bg-white" />
-          </div>
+          <input type="date" id="queueDateFilter" onchange="fetchQueue(true)" class="w-full rounded-xl border p-2 text-sm bg-white" />
           <div id="queueList" class="space-y-3"></div>
         </div>
 
         <div id="section-history" class="hidden space-y-3">
-          <div class="flex justify-between items-center mb-2">
-            <h3 class="font-bold text-gray-700 text-sm">รายการล่าสุด</h3>
-            <button onclick="clearHistory()" class="text-[10px] text-red-500 font-bold">ล้างประวัติ</button>
-          </div>
+          <div class="flex justify-between items-center"><h3 class="font-bold text-gray-700 text-sm">รายการล่าสุด</h3><button onclick="clearHistory()" class="text-[10px] text-red-500 font-bold">ล้างประวัติ</button></div>
           <div id="historyList" class="space-y-3"></div>
         </div>
       </div>
@@ -146,162 +103,147 @@
       let queueCache = {};
 
       const dom = {
-        booking: document.getElementById("section-booking"),
-        queue: document.getElementById("section-queue"),
-        history: document.getElementById("section-history"),
-        tabs: {
-          booking: document.getElementById("tab-booking"),
-          queue: document.getElementById("tab-queue"),
-          history: document.getElementById("tab-history")
-        },
-        inputs: {
-          name: document.getElementById("custName"),
-          phone: document.getElementById("custPhone"),
-          loc: document.getElementById("locationType"),
-          service: document.getElementById("serviceType"),
-          date: document.getElementById("date"),
-          time: document.getElementById("time"),
-          price: document.getElementById("price"),
-          deposit: document.getElementById("deposit"),
-          lang: document.getElementById("msgLang"),
-          platform: document.getElementById("platform")
-        },
-        suggestions: document.getElementById("suggestions"),
-        preview: document.getElementById("textPreview"),
-        queueList: document.getElementById("queueList"),
-        historyList: document.getElementById("historyList"),
-        btnSave: document.getElementById("btnSave")
+        booking: document.getElementById("section-booking"), queue: document.getElementById("section-queue"), history: document.getElementById("section-history"),
+        tabs: { booking: document.getElementById("tab-booking"), queue: document.getElementById("tab-queue"), history: document.getElementById("tab-history") },
+        inputs: { name: document.getElementById("custName"), phone: document.getElementById("custPhone"), loc: document.getElementById("locationType"), service: document.getElementById("serviceType"), date: document.getElementById("date"), time: document.getElementById("time"), price: document.getElementById("price"), deposit: document.getElementById("deposit"), lang: document.getElementById("msgLang"), platform: document.getElementById("platform") },
+        suggestions: document.getElementById("suggestions"), preview: document.getElementById("textPreview"), queueList: document.getElementById("queueList"), historyList: document.getElementById("historyList"), btnSave: document.getElementById("btnSave")
       };
 
       document.addEventListener("DOMContentLoaded", () => {
         const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
-        dom.inputs.date.value = today;
-        document.getElementById("queueDateFilter").value = today;
+        dom.inputs.date.value = today; document.getElementById("queueDateFilter").value = today;
         updatePreview();
-        
-        // Fix: ซ่อน Suggestions เมื่อคลิกนอกพื้นที่
-        document.addEventListener("click", (e) => {
-          if (!dom.inputs.name.contains(e.target) && !dom.suggestions.contains(e.target)) {
-            dom.suggestions.classList.add("hidden");
-          }
-        });
+        document.addEventListener("click", (e) => { if (!dom.inputs.name.contains(e.target) && !dom.suggestions.contains(e.target)) dom.suggestions.classList.add("hidden"); });
       });
 
       function switchTab(tab) {
-        Object.keys(dom.tabs).forEach(k => {
-          dom[k].classList.toggle("hidden", k !== tab);
-          dom.tabs[k].className = k === tab ? "flex-1 py-4 font-bold tab-active" : "flex-1 py-4 font-bold text-gray-400";
-        });
-        if (tab === 'history') loadHistory();
-        if (tab === 'queue') fetchQueue(false);
+        Object.keys(dom.tabs).forEach(k => { dom[k].classList.toggle("hidden", k !== tab); dom.tabs[k].className = k === tab ? "flex-1 py-4 font-bold tab-active" : "flex-1 py-4 font-bold text-gray-400"; });
+        if (tab === 'history') loadHistory(); if (tab === 'queue') fetchQueue(false);
       }
 
       function handleNameInput() {
-        const val = dom.inputs.name.value.toLowerCase();
-        updatePreview();
-        if (val.length < 1) { dom.suggestions.classList.add("hidden"); return; }
-        const history = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        const matches = history.filter((v, i, a) => v.name.toLowerCase().includes(val) && a.findIndex(t => t.name === v.name) === i).slice(0, 5);
-        if (matches.length > 0) {
-          dom.suggestions.innerHTML = matches.map(d => `<div onclick="fillData('${d.name}', '${d.phone}', '${d.locType || 'default'}')" class="p-3 hover:bg-pink-50 cursor-pointer border-b border-gray-50 last:border-0 text-sm flex justify-between items-center"><span class="font-bold text-pink-600">${d.name}</span><span class="text-gray-400 text-[10px]">${d.phone}</span></div>`).join("");
+        const val = dom.inputs.name.value.toLowerCase(); updatePreview();
+        if (val.length < 1) return dom.suggestions.classList.add("hidden");
+        const h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        const m = h.filter((v, i, a) => v.name.toLowerCase().includes(val) && a.findIndex(t => t.name === v.name) === i).slice(0, 5);
+        if (m.length > 0) {
+          dom.suggestions.innerHTML = m.map(d => `<div onclick="fillData('${d.name}', '${d.phone}', '${d.locType || 'default'}')" class="p-3 hover:bg-pink-50 cursor-pointer border-b text-sm flex justify-between"><b>${d.name}</b><span class="text-[10px]">${d.phone}</span></div>`).join("");
           dom.suggestions.classList.remove("hidden");
         } else dom.suggestions.classList.add("hidden");
       }
 
-      function fillData(n, p, l) {
-        dom.inputs.name.value = n; dom.inputs.phone.value = p; dom.inputs.loc.value = l;
-        dom.suggestions.classList.add("hidden"); updateDeposit(); updatePreview();
-      }
-
+      function fillData(n, p, l) { dom.inputs.name.value = n; dom.inputs.phone.value = p; dom.inputs.loc.value = l; dom.suggestions.classList.add("hidden"); updateDeposit(); updatePreview(); }
       function validatePhone(el) { el.value = el.value.replace(/[^0-9]/g, "").slice(0, 10); }
       function updateDeposit() { dom.inputs.deposit.value = dom.inputs.loc.value === "onsite" ? 1000 : 500; }
 
       function generateData() {
-        const i = dom.inputs;
-        const [y, m, d] = i.date.value ? i.date.value.split("-") : ["xxxx", "xx", "xx"];
-        const ds = `${d}/${m}/${y}`;
-        let txt = i.lang.value === "th" ? `ยืนยันการจอง💓\nมัดจำ ${i.deposit.value} บาท\n\nชื่อ: ${i.name.value || "..."}\nเบอร์: ${i.phone.value || "..."}\nบริการ: ${i.service.value || "ต่อขนตา"}\nวันที่: ${ds}\nเวลา: ${i.time.value || "--:--"}\n\n` : `Confirm Booking💓\nDeposit: ${i.deposit.value} THB\n\nName: ${i.name.value || "..."}\nPhone: ${i.phone.value || "..."}\nService: ${i.service.value || "ต่อขนตา"}\nDate: ${ds}\nTime: ${i.time.value || "--:--"}\n\n`;
-        if (i.loc.value === "onsite") txt += i.lang.value === "th" ? `- เวลาอาจคลาดเคลื่อนตามการจราจรค่า🙏\n🥰 แล้วพบกันค่า 🫶💖` : `- Traffic may affect time ka🙏\n🥰 See you soon! 🫶💖`;
-        else txt += i.lang.value === "th" ? `- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ🥰 แล้วพบกันนะค่า🫶💖` : `- Room 964 ka\n- Wait at Lobby ka💖\n- Late max 15 mins ka🫶💖`;
-        return { text: txt, calLine: `${i.name.value} | ${i.platform.value} | ${i.phone.value} | ${i.price.value || "ราคา"}(มัดจำ${i.deposit.value}) | ${i.service.value || "ต่อขนตา"}`, dateInput: i.date.value, time: i.time.value, dateStr: ds };
+        const i = dom.inputs; const [y, m, d] = i.date.value.split("-"); const ds = `${d}/${m}/${y}`;
+        let t = i.lang.value === "th" ? `ยืนยันการจอง💓\nมัดจำ ${i.deposit.value} บาท\n\nชื่อ: ${i.name.value || "..."}\nเบอร์: ${i.phone.value || "..."}\nบริการ: ${i.service.value || "ต่อขนตา"}\nวันที่: ${ds}\nเวลา: ${i.time.value || "--:--"}\n\n` : `Confirm Booking💓\nDeposit: ${i.deposit.value} THB\n\nName: ${i.name.value || "..."}\nPhone: ${i.phone.value || "..."}\nService: ${i.service.value || "ต่อขนตา"}\nDate: ${ds}\nTime: ${i.time.value || "--:--"}\n\n`;
+        t += i.loc.value === "onsite" ? (i.lang.value === "th" ? "- เวลาอาจคลาดเคลื่อนตามการจราจรค่า🙏\n🥰 แล้วพบกันค่า 🫶💖" : "- Traffic may affect time ka🙏\n🥰 See you soon! 🫶💖") : (i.lang.value === "th" ? "- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ🥰 แล้วพบกันนะค่า🫶💖" : "- Room 964 ka\n- Wait at Lobby ka💖\n- Late max 15 mins ka🫶💖");
+        return { text: t, calLine: `${i.name.value} | ${i.platform.value} | ${i.phone.value} | ${i.price.value || "ราคา"}(มัดจำ${i.deposit.value}) | ${i.service.value || "ต่อขนตา"}`, dateInput: i.date.value, time: i.time.value };
       }
 
       function updatePreview() { dom.preview.innerText = generateData().text; }
-
-      async function generateAndCopy() {
-        if (dom.inputs.phone.value.length !== 10) return alert("❌ กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
-        await navigator.clipboard.writeText(generateData().text); alert("คัดลอกเรียบร้อย! ✅");
-      }
+      async function generateAndCopy() { if (dom.inputs.phone.value.length !== 10) return alert("เบอร์โทรไม่ครบ"); await navigator.clipboard.writeText(generateData().text); alert("คัดลอกแล้ว!"); }
 
       async function sendToCalendar() {
-        if (dom.inputs.phone.value.length !== 10) return alert("❌ กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก");
-        if (!document.getElementById("bookingForm").checkValidity()) { document.getElementById("bookingForm").reportValidity(); return; }
+        if (dom.inputs.phone.value.length !== 10) return alert("เบอร์โทรไม่ครบ");
         dom.btnSave.innerHTML = '<div class="fast-loader mx-auto"></div>'; dom.btnSave.disabled = true;
-        const data = generateData(); saveToHistory(data);
-        const fd = new FormData(); fd.append("date", data.dateInput); fd.append("time", data.time); fd.append("calendarLine", data.calLine);
-        try {
-          await fetch(scriptURL, { method: "POST", body: fd, mode: "no-cors" });
-          alert("ลงปฏิทินสำเร็จ! 🗓️"); delete queueCache[data.dateInput]; 
-          document.getElementById("bookingForm").reset();
-          dom.inputs.date.value = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
-          updateDeposit(); updatePreview();
-        } catch (e) { alert("ส่งไม่สำเร็จ กรุณาลองใหม่"); }
-        finally { dom.btnSave.innerText = "ลงปฏิทิน & บันทึก 🗓️"; dom.btnSave.disabled = false; }
+        const d = generateData(); saveToHistory(d);
+        const fd = new FormData(); fd.append("date", d.dateInput); fd.append("time", d.time); fd.append("calendarLine", d.calLine);
+        try { await fetch(scriptURL, { method: "POST", body: fd, mode: "no-cors" }); alert("สำเร็จ!"); delete queueCache[d.dateInput]; location.reload(); } 
+        catch (e) { alert("ล้มเหลว"); dom.btnSave.innerText = "ลงปฏิทิน & บันทึก 🗓️"; dom.btnSave.disabled = false; }
       }
 
-      async function fetchQueue(force = false) {
-        const date = document.getElementById("queueDateFilter").value;
-        if (!date) return;
-        if (queueCache[date] && !force) { renderQueue(queueCache[date]); return; }
+      async function fetchQueue(f) {
+        const dt = document.getElementById("queueDateFilter").value;
+        if (queueCache[dt] && !f) return renderQueue(queueCache[dt]);
         dom.queueList.innerHTML = '<div class="flex justify-center py-10"><div class="fast-loader"></div></div>';
         try {
-          const res = await fetch(`${scriptURL}?action=getQueue&date=${date}&_=${Date.now()}`);
-          const data = await res.json(); queueCache[date] = data; renderQueue(data);
-        } catch (e) { dom.queueList.innerHTML = '<p class="text-center py-10 text-red-400">ไม่สามารถโหลดข้อมูลคิวได้</p>'; }
+          const r = await fetch(`${scriptURL}?action=getQueue&date=${dt}&_=${Date.now()}`);
+          const data = await r.json(); queueCache[dt] = data; renderQueue(data);
+        } catch (e) { dom.queueList.innerHTML = "Error"; }
       }
 
       function renderQueue(data) {
-        if (!data || data.length === 0) { dom.queueList.innerHTML = '<p class="text-center py-10 text-gray-400 text-xs">ไม่มีคิวงาน</p>'; return; }
+        if (!data || data.length === 0) { 
+          dom.queueList.innerHTML = '<p class="text-center py-10 text-gray-400 text-xs">ไม่มีคิวงาน</p>'; 
+          return; 
+        }
+        
         dom.queueList.innerHTML = data.map((item, i) => {
-          const isDone = item.status === "DONE"; const parts = item.title.split(" | ");
+          const isDone = item.status === "DONE"; 
+          // แยกข้อมูลตามรูปแบบเดิม: ชื่อ | แพลตฟอร์ม | เบอร์ | ราคา(มัดจำ) | บริการ
+          const parts = item.title.split(" | "); 
+          
           return `<div class="queue-item overflow-hidden transition-all ${isDone ? "bg-gray-50 opacity-60" : "bg-white"}">
             <div onclick="toggleAccordion('desc-${i}')" class="p-4 flex justify-between items-center cursor-pointer active:bg-pink-50">
               <div class="flex gap-3 items-center overflow-hidden">
-                <div class="${isDone ? "text-gray-400 bg-gray-200" : "text-pink-600 bg-pink-50"} font-bold text-xs p-2 rounded-xl min-w-[55px] text-center">${item.startTime}</div>
-                <div class="overflow-hidden"><div class="text-gray-800 font-bold text-sm truncate ${isDone ? "line-through" : ""}">${parts[0] || "Unknown"}</div><div class="text-[10px] text-gray-400 truncate w-full max-w-[150px]">${item.title}</div></div>
+                <div class="${isDone ? "text-gray-400 bg-gray-200" : "text-pink-600 bg-pink-50"} font-bold text-xs p-2 rounded-xl min-w-[55px] text-center">
+                  ${item.startTime}
+                </div>
+                <div class="overflow-hidden">
+                  <div class="text-gray-800 font-bold text-sm truncate ${isDone ? "line-through" : ""}">
+                    ${parts[0] || "Unknown"}
+                  </div>
+                  <div class="text-[10px] text-gray-400 truncate w-full max-w-[150px]">
+                    ${item.title}
+                  </div>
+                </div>
               </div>
-              <button onclick="event.stopPropagation(); toggleStatus('${item.id}', '${item.status}')" class="p-2 rounded-full ${isDone ? "bg-green-500 text-white" : "bg-pink-100 text-pink-500"}"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg></button>
+              <button onclick="event.stopPropagation(); toggleStatus('${item.id}', '${item.status}')" class="p-2 rounded-full ${isDone ? "bg-green-500 text-white" : "bg-pink-100 text-pink-500"}">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+              </button>
             </div>
+            
             <div id="desc-${i}" class="hidden bg-pink-200/20 border-t border-dashed border-pink-100 p-4">
               <div class="grid grid-cols-2 gap-3 text-[11px]">
-                <div class="bg-white p-2 rounded-lg border border-pink-50"><span class="text-gray-400 block text-[9px]">Phone</span><span class="text-gray-700 font-bold">${parts[2] || "-"}</span></div>
-                <div class="bg-white p-2 rounded-lg border border-pink-50"><span class="text-gray-400 block text-[9px]">Price</span><span class="text-pink-600 font-bold">${parts[3] || "-"}</span></div>
+                <div class="bg-white p-2 rounded-lg border border-pink-50">
+                  <span class="text-gray-400 block text-[9px]">ชื่อ/แพลตฟอร์ม</span>
+                  <span class="text-gray-700 font-bold">${parts[0] || "-"} (${parts[1] || "-"})</span>
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-pink-50">
+                  <span class="text-gray-400 block text-[9px]">เบอร์โทรศัพท์</span>
+                  <span class="text-gray-700 font-bold">${parts[2] || "-"}</span>
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-pink-50">
+                  <span class="text-gray-400 block text-[9px]">ราคา/มัดจำ</span>
+                  <span class="text-pink-600 font-bold">${parts[3] || "-"}</span>
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-pink-50">
+                  <span class="text-gray-400 block text-[9px]">บริการที่ได้รับ</span>
+                  <span class="text-gray-700 font-bold">${parts[4] || "-"}</span>
+                </div>
+              </div>
+              <div class="mt-2 bg-white p-2 rounded-lg border border-pink-50">
+                <span class="text-gray-400 block text-[9px]">หมายเหตุ (Calendar Description)</span>
+                <span class="text-gray-600 text-[10px]">${item.description || "-"}</span>
               </div>
             </div>
           </div>`;
         }).join("");
       }
-
+      
       function toggleAccordion(id) { document.getElementById(id).classList.toggle("hidden"); }
-
-      async function toggleStatus(eventId, currentStatus) {
-        const formData = new FormData(); formData.append("action", "updateStatus"); formData.append("eventId", eventId); formData.append("status", currentStatus === "DONE" ? "[WAIT]" : "[DONE]");
-        try { await fetch(scriptURL, { method: "POST", body: formData, mode: "no-cors" }); fetchQueue(true); } catch (e) { alert("Error updating status"); }
+      async function toggleStatus(id, s) {
+        const fd = new FormData(); fd.append("action", "updateStatus"); fd.append("eventId", id); fd.append("status", s === 'DONE' ? '[WAIT]' : '[DONE]');
+        await fetch(scriptURL, { method: "POST", body: fd, mode: "no-cors" }); fetchQueue(true);
       }
 
-      function saveToHistory(data) {
+      function saveToHistory(d) {
         let h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        h.unshift({ name: data.name, phone: data.phone, locType: data.locType, line: data.calLine, dateStr: data.dateStr });
+        h.unshift({ name: dom.inputs.name.value, phone: dom.inputs.phone.value, locType: dom.inputs.loc.value, line: d.calLine });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(h.slice(0, 100)));
       }
 
       function loadHistory() {
         const h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        if (h.length === 0) { dom.historyList.innerHTML = '<p class="text-center py-10 text-gray-300 text-xs">ไม่มีข้อมูลประวัติ</p>'; return; }
-        dom.historyList.innerHTML = h.map(i => `<div class="p-3 bg-pink-50 rounded-xl text-[11px] border border-pink-100 shadow-sm flex justify-between items-center"><div class="truncate mr-2"><span class="font-bold">${i.name}</span> | ${i.line}</div><button onclick="navigator.clipboard.writeText('${i.line}'); alert('คัดลอกแล้ว!')" class="text-pink-600 font-bold px-2">📋</button></div>`).join("");
+        dom.historyList.innerHTML = h.length ? h.map(i => `<div class="p-3 bg-pink-50 rounded-xl text-[11px] flex justify-between"><span><b>${i.name}</b> | ${i.line}</span><button onclick="navigator.clipboard.writeText('${i.line}'); alert('คัดลอกแล้ว!')">📋</button></div>`).join("") : "ไม่มีประวัติ";
       }
 
-      function clearHistory() { if (confirm("ยืนยันการล้างประวัติทั้งหมด?")) { localStorage.removeItem(STORAGE_KEY); loadHistory(); } }
+      function clearHistory() { if (confirm("ล้างประวัติ?")) { localStorage.removeItem(STORAGE_KEY); loadHistory(); } }
     </script>
   </body>
 </html>
