@@ -4,83 +4,97 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="color-scheme" content="light only" />
-    <title>Hello.mirilash - Booking System</title>
+    <title>Hello.mirilash - Smart Booking</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap");
       html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
       body { font-family: "Kanit", sans-serif; background-color: #fdf2f8; color: #334155; }
       input, select, textarea, button { -webkit-appearance: none; appearance: none; outline: none !important; }
-      @media screen and (max-width: 768px) { input, select { font-size: 16px !important; } }
       .card { background-color: #ffffff; border-radius: 24px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); }
       .tab-active { color: #db2777; border-bottom: 3px solid #db2777; transition: all 0.3s; }
       .custom-select-wrapper::after { content: "▼"; font-size: 10px; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.5; }
       .fast-loader { border: 3px solid #f3f3f3; border-top: 3px solid #db2777; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      input[type="date"]::-webkit-calendar-picker-indicator { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; padding: 0; cursor: pointer; opacity: 0; }
+      
+      /* ปรับแต่งเลื่อน Scrollbar ของ Suggestions ให้ดูดีขึ้น */
+      #suggestions::-webkit-scrollbar { width: 4px; }
+      #suggestions::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 10px; }
     </style>
   </head>
   <body class="p-4 pb-10">
     <div class="max-w-md mx-auto card overflow-hidden">
-      <div class="flex border-b text-sm bg-white">
-        <button onclick="switchTab('booking')" id="tab-booking" class="flex-1 py-4 font-bold tab-active">หน้าจอง</button>
-        <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-4 font-bold text-gray-400">ประวัติลูกค้า</button>
+      <div class="flex border-b text-[13px] bg-white">
+        <button onclick="switchTab('booking')" id="tab-booking" class="flex-1 py-4 font-bold tab-active">จองคิว</button>
+        <button onclick="switchTab('queue')" id="tab-queue" class="flex-1 py-4 font-bold text-gray-400">คัดลอกคิวว่าง</button>
+        <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-4 font-bold text-gray-400">ประวัติ</button>
       </div>
 
       <div class="p-6">
         <div id="section-booking">
           <form id="bookingForm" class="space-y-5" autocomplete="off">
             <div class="grid grid-cols-2 gap-3 pb-2">
-              <div class="relative custom-select-wrapper">
-                <select id="msgLang" onchange="updatePreview()" class="w-full rounded-2xl border-none bg-[#fdf2f8] p-3.5 text-pink-600 font-bold text-sm shadow-sm focus:ring-2 focus:ring-pink-300">
-                  <option value="th">🇹🇭 ภาษาไทย</option>
-                  <option value="en">🇺🇸 English</option>
-                </select>
-              </div>
-              <div class="relative custom-select-wrapper">
-                <select id="platform" onchange="updatePreview()" class="w-full rounded-2xl border-none bg-[#f1f5f9] p-3.5 text-slate-600 font-bold text-sm shadow-sm focus:ring-2 focus:ring-slate-300">
-                  <option value="LineOA">LineOA</option>
-                  <option value="FB">FB</option>
-                  <option value="IG">IG</option>
-                </select>
-              </div>
+                <div class="relative custom-select-wrapper">
+                  <select id="msgLang" onchange="updatePreview()" class="w-full rounded-2xl border-none bg-[#fdf2f8] p-3.5 text-pink-600 font-bold text-sm shadow-sm focus:ring-2 focus:ring-pink-300">
+                    <option value="th">🇹🇭 ภาษาไทย</option>
+                    <option value="en">🇺🇸 English</option>
+                  </select>
+                </div>
+                <div class="relative custom-select-wrapper">
+                  <select id="platform" onchange="updatePreview()" class="w-full rounded-2xl border-none bg-[#f1f5f9] p-3.5 text-slate-600 font-bold text-sm shadow-sm focus:ring-2 focus:ring-slate-300">
+                    <option value="LineOA">LineOA</option>
+                    <option value="FB">FB</option>
+                    <option value="IG">IG</option>
+                  </select>
+                </div>
             </div>
 
             <div class="bg-white rounded-3xl border border-slate-100 p-4 shadow-sm space-y-4">
-              <div class="relative">
-                <label class="flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase ml-1 mb-1.5">👤 ชื่อลูกค้า <span class="text-pink-500">*</span></label>
-                <input type="text" id="custName" oninput="handleNameInput()" required placeholder="ระบุชื่อลูกค้า..." class="w-full rounded-xl border-[#e2e8f0] border-2 p-3.5 bg-white focus:border-pink-400 focus:ring-4 focus:ring-pink-50 transition-all text-lg font-medium" />
-                <div id="suggestions" class="hidden absolute left-0 right-0 z-20 mt-2 bg-white border border-slate-100 rounded-2xl shadow-2xl overflow-hidden max-h-48 overflow-y-auto"></div>
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <input type="tel" id="custPhone" oninput="validatePhone(this); updatePreview();" required placeholder="เบอร์โทรศัพท์" maxlength="10" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white focus:border-slate-400" />
-                <div class="relative custom-select-wrapper">
+                <div class="relative">
+                    <input type="text" id="custName" oninput="handleNameInput()" required placeholder="👤 ชื่อลูกค้า" class="w-full rounded-xl border-[#e2e8f0] border-2 p-3.5 text-lg font-medium" />
+                    <div id="suggestions" class="hidden absolute left-0 right-0 z-[100] mt-1 bg-white border border-pink-100 rounded-2xl shadow-xl max-h-48 overflow-y-auto overflow-x-hidden"></div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                  <input type="tel" id="custPhone" oninput="validatePhone(this); updatePreview();" required placeholder="เบอร์โทรศัพท์" maxlength="10" class="w-full rounded-xl border-[#e2e8f0] border p-3.5" />
                   <select id="locationType" onchange="updateDeposit(); updatePreview();" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 font-bold bg-[#f8fafc]">
                     <option value="default">🏠 ในสถานที่</option>
                     <option value="onsite">🚗 นอกสถานที่</option>
                   </select>
                 </div>
-              </div>
             </div>
 
-            <div class="bg-[#f8fafc] rounded-3xl p-4 space-y-4 border border-slate-50">
-              <input type="text" id="serviceType" oninput="updatePreview()" placeholder="บริการ (เช่น ต่อขนตา)" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white" />
-              <div class="grid grid-cols-2 gap-4">
-                <input type="date" id="date" onchange="updatePreview()" required class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white text-sm" />
-                <input type="time" id="time" onchange="updatePreview()" required class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white text-sm" />
-              </div>
-              <div class="grid grid-cols-2 gap-4 border-t pt-4">
-                <input type="number" id="price" oninput="updatePreview()" placeholder="ราคาเต็ม" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white" />
-                <input type="number" id="deposit" oninput="updatePreview()" value="500" class="w-full rounded-xl border-pink-200 border-2 p-3.5 font-bold text-pink-600 bg-white" />
-              </div>
+            <div class="bg-[#f8fafc] rounded-3xl p-4 space-y-4">
+                <input type="text" id="serviceType" oninput="updatePreview()" placeholder="บริการ (เช่น ต่อขนตา)" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white" />
+                <div class="grid grid-cols-2 gap-4">
+                  <input type="date" id="date" onchange="updatePreview()" required class="w-full rounded-xl border-[#e2e8f0] border p-3.5 text-sm" />
+                  <input type="time" id="time" onchange="updatePreview()" required class="w-full rounded-xl border-[#e2e8f0] border p-3.5 text-sm" />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="number" id="price" oninput="updatePreview()" placeholder="ราคาเต็ม" class="w-full rounded-xl border-[#e2e8f0] border p-3.5 bg-white" />
+                    <input type="number" id="deposit" oninput="updatePreview()" value="500" class="w-full rounded-xl border-pink-200 border-2 p-3.5 font-bold text-pink-600 bg-white" />
+                </div>
             </div>
-
-            <div class="grid grid-cols-1 gap-3 pt-2">
-              <button type="button" onclick="generateAndCopy()" class="w-full bg-white border-2 border-pink-500 text-pink-600 font-bold py-4 rounded-2xl active:opacity-70">คัดลอกข้อความ 📋</button>
-              <button type="button" id="btnSave" onclick="sendToCalendar()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl active:opacity-70">ลงปฏิทิน & บันทึก 🗓️</button>
-            </div>
+            <button type="button" onclick="generateAndCopy()" class="w-full bg-white border-2 border-pink-500 text-pink-600 font-bold py-4 rounded-2xl active:opacity-70">คัดลอกข้อความ 📋</button>
+            <button type="button" id="btnSave" onclick="sendToCalendar()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl active:opacity-70">ลงปฏิทิน & บันทึก 🗓️</button>
           </form>
+          <div id="textPreview" class="mt-6 bg-white rounded-3xl p-5 border-2 border-dashed border-slate-200 text-sm leading-relaxed whitespace-pre-wrap text-slate-500 italic">ระบุข้อมูล...</div>
+        </div>
 
-          <div id="textPreview" class="mx-4 mt-6 mb-8 bg-white rounded-3xl p-5 border-2 border-dashed border-slate-200 text-sm leading-relaxed whitespace-pre-wrap text-slate-500 italic">ระบุข้อมูล...</div>
+        <div id="section-queue" class="hidden py-4 text-center">
+            <div class="bg-pink-50 rounded-[2rem] p-6 border border-pink-100 shadow-inner">
+                <p class="text-xs font-bold text-pink-400 uppercase tracking-widest mb-4">เช็คคิวว่างรายวัน</p>
+                <div class="relative inline-block mb-4">
+                    <label for="dateSelector" id="currentDateDisplay" class="text-xl font-bold text-slate-700 bg-white px-6 py-3 rounded-2xl shadow-sm border border-pink-100 cursor-pointer block min-w-[200px]">เลือกวันที่</label>
+                    <input type="date" id="dateSelector" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer" onchange="fetchQueueOnly()">
+                </div>
+                <div id="queuePreviewContainer" class="mt-4 bg-white rounded-2xl p-4 border-2 border-dashed border-slate-200 text-sm leading-relaxed whitespace-pre-wrap text-slate-400 italic text-left min-h-[60px]">กำลังรอเลือกวันที่...</div>
+                <div id="loaderQueue" class="flex flex-col items-center py-4 hidden"><div class="fast-loader mb-2"></div></div>
+                <div id="queueStatusInfo" class="hidden mt-6">
+                    <button onclick="copyAvailableSlots()" class="w-full bg-pink-500 text-white font-bold py-5 rounded-3xl shadow-lg shadow-pink-200 active:scale-95 transition-all flex items-center justify-center gap-3">📋 คัดลอกข้อความ</button>
+                </div>
+            </div>
         </div>
 
         <div id="section-history" class="hidden space-y-3">
@@ -91,35 +105,33 @@
     </div>
 
     <script>
-      const scriptURL = "https://script.google.com/macros/s/AKfycby1CSNylCskSthoPi9_f-MoNzdNRWAyADj2Y7E6-TgLrorC6gDN6cHB_btTD1Fep41d/exec";
+      const BOOKING_API_URL = "https://script.google.com/macros/s/AKfycby1CSNylCskSthoPi9_f-MoNzdNRWAyADj2Y7E6-TgLrorC6gDN6cHB_btTD1Fep41d/exec";
+      const QUEUE_API_URL = "https://script.google.com/macros/s/AKfycbzd2nXgnGC9sbsC8mINCenFnPIYN_wZydSji_xVbmTKy6bJuaIRRyjbsfjBmSd7rBar/exec";
       const STORAGE_KEY = "marizaHistoryData";
+      let availableSlotsGlobal = [];
 
       const dom = {
         booking: document.getElementById("section-booking"),
         history: document.getElementById("section-history"),
-        tabs: { booking: document.getElementById("tab-booking"), history: document.getElementById("tab-history") },
-        inputs: {
-          name: document.getElementById("custName"),
-          phone: document.getElementById("custPhone"),
-          loc: document.getElementById("locationType"),
-          service: document.getElementById("serviceType"),
-          date: document.getElementById("date"),
-          time: document.getElementById("time"),
-          price: document.getElementById("price"),
-          deposit: document.getElementById("deposit"),
-          lang: document.getElementById("msgLang"),
-          platform: document.getElementById("platform"),
-        },
+        queue: document.getElementById("section-queue"),
+        tabs: { booking: document.getElementById("tab-booking"), history: document.getElementById("tab-history"), queue: document.getElementById("tab-queue") },
+        inputs: { name: document.getElementById("custName"), phone: document.getElementById("custPhone"), loc: document.getElementById("locationType"), service: document.getElementById("serviceType"), date: document.getElementById("date"), time: document.getElementById("time"), price: document.getElementById("price"), deposit: document.getElementById("deposit"), lang: document.getElementById("msgLang"), platform: document.getElementById("platform") },
         suggestions: document.getElementById("suggestions"),
         preview: document.getElementById("textPreview"),
         historyList: document.getElementById("historyList"),
         btnSave: document.getElementById("btnSave"),
+        loaderQueue: document.getElementById("loaderQueue"),
+        queueStatusInfo: document.getElementById("queueStatusInfo"),
+        queuePreviewContainer: document.getElementById("queuePreviewContainer")
       };
 
       document.addEventListener("DOMContentLoaded", () => {
         const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
         dom.inputs.date.value = today;
+        document.getElementById('dateSelector').value = today;
         updatePreview();
+
+        // ✅ แก้ไข: คลิกที่อื่นเพื่อปิด Suggestions
         document.addEventListener("click", (e) => {
           if (!dom.inputs.name.contains(e.target) && !dom.suggestions.contains(e.target)) {
             dom.suggestions.classList.add("hidden");
@@ -129,20 +141,35 @@
 
       function switchTab(tab) {
         Object.keys(dom.tabs).forEach((k) => {
-          dom[k].classList.toggle("hidden", k !== tab);
+          document.getElementById(`section-${k}`).classList.toggle("hidden", k !== tab);
           dom.tabs[k].className = k === tab ? "flex-1 py-4 font-bold tab-active" : "flex-1 py-4 font-bold text-gray-400";
         });
         if (tab === "history") loadHistory();
+        if (tab === "queue") fetchQueueOnly();
       }
 
+      /* --- Logic: ชื่อลูกค้า & Suggestions (แก้ไขให้คลิกเลือกง่ายขึ้น) --- */
       function handleNameInput() {
-        const val = dom.inputs.name.value.toLowerCase();
+        const val = dom.inputs.name.value.toLowerCase().trim();
         updatePreview();
-        if (val.length < 1) return dom.suggestions.classList.add("hidden");
+        if (val.length < 1) {
+            dom.suggestions.classList.add("hidden");
+            return;
+        }
         const h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        const m = h.filter((v, i, a) => v.name.toLowerCase().includes(val) && a.findIndex((t) => t.name === v.name) === i).slice(0, 5);
+        // กรองชื่อที่ไม่ซ้ำ
+        const m = h.filter((v, i, a) => 
+            v.name.toLowerCase().includes(val) && 
+            a.findIndex((t) => t.name === v.name) === i
+        ).slice(0, 5);
+
         if (m.length > 0) {
-          dom.suggestions.innerHTML = m.map((d) => `<div onclick="fillData('${d.name}', '${d.phone}', '${d.locType || "default"}')" class="p-3 hover:bg-pink-50 cursor-pointer border-b text-sm flex justify-between"><b>${d.name}</b><span class="text-[10px]">${d.phone}</span></div>`).join("");
+          dom.suggestions.innerHTML = m.map((d) => `
+            <div onclick="fillData('${d.name}', '${d.phone}', '${d.locType || "default"}')" 
+                 class="p-3 hover:bg-pink-50 cursor-pointer border-b border-slate-50 text-sm flex justify-between items-center transition-colors">
+              <span class="font-bold text-slate-700">${d.name}</span>
+              <span class="text-[10px] text-slate-400">${d.phone}</span>
+            </div>`).join("");
           dom.suggestions.classList.remove("hidden");
         } else {
           dom.suggestions.classList.add("hidden");
@@ -153,13 +180,71 @@
         dom.inputs.name.value = n;
         dom.inputs.phone.value = p;
         dom.inputs.loc.value = l;
-        dom.suggestions.classList.add("hidden");
+        dom.suggestions.classList.add("hidden"); // ปิดทันทีเมื่อเลือก
         updateDeposit();
         updatePreview();
       }
 
+      /* --- Queue Logic (พร้อมระบบกรองเวลาปัจจุบัน) --- */
+      async function fetchQueueOnly() {
+        const selectedDateStr = document.getElementById('dateSelector').value;
+        const dateDisplay = document.getElementById('currentDateDisplay');
+        dateDisplay.innerText = new Date(selectedDateStr).toLocaleDateString('th-TH', { day: '2-digit', month: 'long', year: 'numeric' });
+
+        dom.loaderQueue.classList.remove('hidden');
+        dom.queueStatusInfo.classList.add('hidden');
+        dom.queuePreviewContainer.innerText = "กำลังตรวจสอบคิว...";
+        availableSlotsGlobal = [];
+
+        try {
+            const response = await fetch(`${QUEUE_API_URL}?date=${selectedDateStr}`);
+            const busySlots = await response.json();
+            const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Bangkok"}));
+            const todayStr = now.toISOString().split('T')[0];
+            const times = ["8:00","9:00","10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00"];
+            
+            times.forEach(time => {
+                const [h, m] = time.split(':').map(Number);
+                const slotDT = new Date(selectedDateStr + "T00:00:00+07:00");
+                slotDT.setHours(h, m, 0);
+                if (!checkIsBusy(selectedDateStr, time, busySlots) && slotDT > now) {
+                    availableSlotsGlobal.push(time);
+                }
+            });
+
+            if (availableSlotsGlobal.length > 0) {
+                const previewMsg = `จะมีคิวว่าง ${availableSlotsGlobal.join(", ")} ค่า💖`;
+                dom.queuePreviewContainer.innerText = previewMsg;
+                dom.queuePreviewContainer.classList.replace('text-slate-400', 'text-slate-600');
+                dom.queueStatusInfo.classList.remove('hidden');
+            } else {
+                dom.queuePreviewContainer.innerText = selectedDateStr < todayStr ? "วันที่เลือกผ่านมาแล้วค่า ❌" : "ขออภัย วันนี้คิวเต็มแล้วค่า ❌";
+                dom.queueStatusInfo.classList.add('hidden');
+            }
+        } catch (error) { dom.queuePreviewContainer.innerText = "เกิดข้อผิดพลาดในการดึงข้อมูล"; }
+        finally { dom.loaderQueue.classList.add('hidden'); }
+      }
+
+      function checkIsBusy(selectedDate, checkTime, busySlots) {
+        const [h, m] = checkTime.split(':').map(Number);
+        const checkDate = new Date(selectedDate + "T00:00:00+07:00");
+        checkDate.setHours(h, m, 0);
+        return busySlots.some(slot => {
+            const start = new Date(slot.start);
+            const end = new Date(slot.end);
+            return checkDate >= start && checkDate < end;
+        });
+      }
+
+      async function copyAvailableSlots() {
+        await navigator.clipboard.writeText(dom.queuePreviewContainer.innerText);
+        alert("คัดลอกข้อความแล้ว!");
+      }
+
+      /* --- Logic พื้นฐานอื่นๆ --- */
       function validatePhone(el) { el.value = el.value.replace(/[^0-9]/g, "").slice(0, 10); }
       function updateDeposit() { dom.inputs.deposit.value = dom.inputs.loc.value === "onsite" ? 1000 : 500; }
+      function updatePreview() { dom.preview.innerText = generateData().text; }
 
       function generateData() {
         const i = dom.inputs;
@@ -168,30 +253,13 @@
         let t = i.lang.value === "th"
             ? `ยืนยันการจอง💓\nมัดจำ ${i.deposit.value} บาท\n\nชื่อ: คุณ${i.name.value || "..."}\nเบอร์: ${i.phone.value || "..."}\nบริการ: ${i.service.value || "ต่อขนตา"}\nวันที่: ${ds}\nเวลา: ${i.time.value || "--:--"}\n\n`
             : `Confirm Booking💓\nDeposit: ${i.deposit.value} THB\n\nName: ${i.name.value || "..."}\nPhone: ${i.phone.value || "..."}\nService: ${i.service.value || "ต่อขนตา"}\nDate: ${ds}\nTime: ${i.time.value || "--:--"}\n\n`;
-
         t += i.loc.value === "onsite"
             ? (i.lang.value === "th" ? "- เวลาอาจคลาดเคลื่อนตามการจราจรค่า🙏\n🥰 แล้วพบกันค่า 🫶💖" : "- Traffic may affect time ka🙏\n🥰 See you soon! 🫶💖")
             : (i.lang.value === "th" ? "- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ🥰 \n\nแล้วพบกันนะค่า🫶💖" : "- Room 964 ka\n- Wait at Lobby ka💖\n- Late max 15 mins ka🫶💖");
-
-        return {
-          text: t,
-          calLine: `${i.name.value} | ${i.platform.value} | ${i.phone.value} | ${i.price.value || "ราคา"}(มัดจำ${i.deposit.value}) | ${i.service.value || "ต่อขนตา"}`,
-          dateInput: i.date.value,
-          time: i.time.value,
-        };
+        return { text: t, calLine: `${i.name.value} | ${i.platform.value} | ${i.phone.value} | ${i.price.value || "ราคา"}(มัดจำ${i.deposit.value}) | ${i.service.value || "ต่อขนตา"}`, dateInput: i.date.value, time: i.time.value };
       }
 
-      function updatePreview() { dom.preview.innerText = generateData().text; }
-
-      async function generateAndCopy() {
-        await navigator.clipboard.writeText(generateData().text);
-        alert("คัดลอกแล้ว!");
-      }
-
-      async function copyFromHistory(fullText) {
-        await navigator.clipboard.writeText(fullText);
-        alert("คัดลอกแล้ว!");
-      }
+      async function generateAndCopy() { await navigator.clipboard.writeText(generateData().text); alert("คัดลอกแล้ว!"); }
 
       async function sendToCalendar() {
         dom.btnSave.innerHTML = '<div class="fast-loader mx-auto"></div>';
@@ -199,56 +267,28 @@
         const d = generateData();
         saveToHistory(d);
         const fd = new FormData();
-        fd.append("date", d.dateInput);
-        fd.append("time", d.time);
-        fd.append("calendarLine", d.calLine);
+        fd.append("date", d.dateInput); fd.append("time", d.time); fd.append("calendarLine", d.calLine);
         try {
-          await fetch(scriptURL, { method: "POST", body: fd, mode: "no-cors" });
-          alert("สำเร็จ!");
-          location.reload();
-        } catch (e) {
-          alert("ล้มเหลว");
-          dom.btnSave.innerText = "ลงปฏิทิน & บันทึก 🗓️";
-          dom.btnSave.disabled = false;
-        }
+          await fetch(BOOKING_API_URL, { method: "POST", body: fd, mode: "no-cors" });
+          alert("สำเร็จ!"); location.reload();
+        } catch (e) { alert("ล้มเหลว"); dom.btnSave.innerText = "ลงปฏิทิน & บันทึก 🗓️"; dom.btnSave.disabled = false; }
       }
 
       function saveToHistory(d) {
         let h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        h.unshift({
-          name: dom.inputs.name.value,
-          phone: dom.inputs.phone.value,
-          locType: dom.inputs.loc.value,
-          line: d.calLine,
-          fullText: d.text, // บันทึกข้อความเต็มไว้ใช้ก๊อปปี้ภายหลัง
-          time: d.time // 👈 เพิ่มบรรทัดนี้เพื่อเก็บเวลา
-        });
+        h.unshift({ name: dom.inputs.name.value, phone: dom.inputs.phone.value, locType: dom.inputs.loc.value, line: d.calLine, fullText: d.text, time: d.time });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(h.slice(0, 100)));
       }
 
       function loadHistory() {
         const h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
         dom.historyList.innerHTML = h.length
-          ? h.map((i) => `
-            <div class="p-3 bg-pink-50 rounded-xl flex justify-between items-center text-xs">
-              <div class="flex-1 pr-2">
-                <div class="font-bold text-pink-600 mb-0.5">${i.time || '--:--'}</div>
-                <div class="text-slate-500 text-[10px] truncate max-w-[200px]">${i.line}</div>
-              </div>
-              <button onclick="copyFromHistory(\`${i.fullText}\`)" class="bg-white p-2.5 rounded-lg shadow-sm border border-pink-100 active:bg-pink-100 transition-colors">
-                📋
-              </button>
-            </div>
-          `).join("")
+          ? h.map((i) => `<div class="p-3 bg-pink-50 rounded-xl flex justify-between items-center text-xs"><div class="flex-1 pr-2"><div class="font-bold text-pink-600 mb-0.5">${i.time || '--:--'}</div><div class="text-slate-500 text-[10px] truncate max-w-[200px]">${i.line}</div></div><button onclick="copyFromHistory(\`${i.fullText}\`)" class="bg-white p-2.5 rounded-lg shadow-sm border border-pink-100">📋</button></div>`).join("")
           : "<div class='text-center py-5 text-gray-400 text-sm'>ไม่มีประวัติ</div>";
       }
 
-      function clearHistory() {
-        if (confirm("ล้างประวัติ?")) {
-          localStorage.removeItem(STORAGE_KEY);
-          loadHistory();
-        }
-      }
+      async function copyFromHistory(txt) { await navigator.clipboard.writeText(txt); alert("คัดลอกแล้ว!"); }
+      function clearHistory() { if (confirm("ล้างประวัติ?")) { localStorage.removeItem(STORAGE_KEY); loadHistory(); } }
     </script>
   </body>
 </html>
