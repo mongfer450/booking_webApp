@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="color-scheme" content="light only">
+    <meta name="color-scheme" content="light only" />
     <title>Hello.mirilash - Booking System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -17,14 +17,12 @@
       .custom-select-wrapper::after { content: "▼"; font-size: 10px; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; opacity: 0.5; }
       .fast-loader { border: 3px solid #f3f3f3; border-top: 3px solid #db2777; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.8s linear infinite; }
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-      .queue-item { background-color: #ffffff; border-radius: 20px; box-shadow: 0 4px 12px rgba(219, 39, 119, 0.03); border: 1px solid #fce7f3; }
     </style>
   </head>
   <body class="p-4 pb-10">
     <div class="max-w-md mx-auto card overflow-hidden">
       <div class="flex border-b text-sm bg-white">
         <button onclick="switchTab('booking')" id="tab-booking" class="flex-1 py-4 font-bold tab-active">หน้าจอง</button>
-        <button onclick="switchTab('queue')" id="tab-queue" class="flex-1 py-4 font-bold text-gray-400">ตารางคิว (Live)</button>
         <button onclick="switchTab('history')" id="tab-history" class="flex-1 py-4 font-bold text-gray-400">ประวัติลูกค้า</button>
       </div>
 
@@ -85,11 +83,6 @@
           <div id="textPreview" class="mx-4 mt-6 mb-8 bg-white rounded-3xl p-5 border-2 border-dashed border-slate-200 text-sm leading-relaxed whitespace-pre-wrap text-slate-500 italic">ระบุข้อมูล...</div>
         </div>
 
-        <div id="section-queue" class="hidden space-y-4">
-          <input type="date" id="queueDateFilter" onchange="fetchQueue(true)" class="w-full rounded-xl border p-2 text-sm bg-white" />
-          <div id="queueList" class="space-y-3"></div>
-        </div>
-
         <div id="section-history" class="hidden space-y-3">
           <div class="flex justify-between items-center"><h3 class="font-bold text-gray-700 text-sm">รายการล่าสุด</h3><button onclick="clearHistory()" class="text-[10px] text-red-500 font-bold">ล้างประวัติ</button></div>
           <div id="historyList" class="space-y-3"></div>
@@ -100,150 +93,162 @@
     <script>
       const scriptURL = "https://script.google.com/macros/s/AKfycby1CSNylCskSthoPi9_f-MoNzdNRWAyADj2Y7E6-TgLrorC6gDN6cHB_btTD1Fep41d/exec";
       const STORAGE_KEY = "marizaHistoryData";
-      let queueCache = {};
 
       const dom = {
-        booking: document.getElementById("section-booking"), queue: document.getElementById("section-queue"), history: document.getElementById("section-history"),
-        tabs: { booking: document.getElementById("tab-booking"), queue: document.getElementById("tab-queue"), history: document.getElementById("tab-history") },
-        inputs: { name: document.getElementById("custName"), phone: document.getElementById("custPhone"), loc: document.getElementById("locationType"), service: document.getElementById("serviceType"), date: document.getElementById("date"), time: document.getElementById("time"), price: document.getElementById("price"), deposit: document.getElementById("deposit"), lang: document.getElementById("msgLang"), platform: document.getElementById("platform") },
-        suggestions: document.getElementById("suggestions"), preview: document.getElementById("textPreview"), queueList: document.getElementById("queueList"), historyList: document.getElementById("historyList"), btnSave: document.getElementById("btnSave")
+        booking: document.getElementById("section-booking"),
+        history: document.getElementById("section-history"),
+        tabs: { booking: document.getElementById("tab-booking"), history: document.getElementById("tab-history") },
+        inputs: {
+          name: document.getElementById("custName"),
+          phone: document.getElementById("custPhone"),
+          loc: document.getElementById("locationType"),
+          service: document.getElementById("serviceType"),
+          date: document.getElementById("date"),
+          time: document.getElementById("time"),
+          price: document.getElementById("price"),
+          deposit: document.getElementById("deposit"),
+          lang: document.getElementById("msgLang"),
+          platform: document.getElementById("platform"),
+        },
+        suggestions: document.getElementById("suggestions"),
+        preview: document.getElementById("textPreview"),
+        historyList: document.getElementById("historyList"),
+        btnSave: document.getElementById("btnSave"),
       };
 
       document.addEventListener("DOMContentLoaded", () => {
         const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
-        dom.inputs.date.value = today; document.getElementById("queueDateFilter").value = today;
+        dom.inputs.date.value = today;
         updatePreview();
-        document.addEventListener("click", (e) => { if (!dom.inputs.name.contains(e.target) && !dom.suggestions.contains(e.target)) dom.suggestions.classList.add("hidden"); });
+        document.addEventListener("click", (e) => {
+          if (!dom.inputs.name.contains(e.target) && !dom.suggestions.contains(e.target)) {
+            dom.suggestions.classList.add("hidden");
+          }
+        });
       });
 
       function switchTab(tab) {
-        Object.keys(dom.tabs).forEach(k => { dom[k].classList.toggle("hidden", k !== tab); dom.tabs[k].className = k === tab ? "flex-1 py-4 font-bold tab-active" : "flex-1 py-4 font-bold text-gray-400"; });
-        if (tab === 'history') loadHistory(); if (tab === 'queue') fetchQueue(false);
+        Object.keys(dom.tabs).forEach((k) => {
+          dom[k].classList.toggle("hidden", k !== tab);
+          dom.tabs[k].className = k === tab ? "flex-1 py-4 font-bold tab-active" : "flex-1 py-4 font-bold text-gray-400";
+        });
+        if (tab === "history") loadHistory();
       }
 
       function handleNameInput() {
-        const val = dom.inputs.name.value.toLowerCase(); updatePreview();
+        const val = dom.inputs.name.value.toLowerCase();
+        updatePreview();
         if (val.length < 1) return dom.suggestions.classList.add("hidden");
         const h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        const m = h.filter((v, i, a) => v.name.toLowerCase().includes(val) && a.findIndex(t => t.name === v.name) === i).slice(0, 5);
+        const m = h.filter((v, i, a) => v.name.toLowerCase().includes(val) && a.findIndex((t) => t.name === v.name) === i).slice(0, 5);
         if (m.length > 0) {
-          dom.suggestions.innerHTML = m.map(d => `<div onclick="fillData('${d.name}', '${d.phone}', '${d.locType || 'default'}')" class="p-3 hover:bg-pink-50 cursor-pointer border-b text-sm flex justify-between"><b>${d.name}</b><span class="text-[10px]">${d.phone}</span></div>`).join("");
+          dom.suggestions.innerHTML = m.map((d) => `<div onclick="fillData('${d.name}', '${d.phone}', '${d.locType || "default"}')" class="p-3 hover:bg-pink-50 cursor-pointer border-b text-sm flex justify-between"><b>${d.name}</b><span class="text-[10px]">${d.phone}</span></div>`).join("");
           dom.suggestions.classList.remove("hidden");
-        } else dom.suggestions.classList.add("hidden");
+        } else {
+          dom.suggestions.classList.add("hidden");
+        }
       }
 
-      function fillData(n, p, l) { dom.inputs.name.value = n; dom.inputs.phone.value = p; dom.inputs.loc.value = l; dom.suggestions.classList.add("hidden"); updateDeposit(); updatePreview(); }
+      function fillData(n, p, l) {
+        dom.inputs.name.value = n;
+        dom.inputs.phone.value = p;
+        dom.inputs.loc.value = l;
+        dom.suggestions.classList.add("hidden");
+        updateDeposit();
+        updatePreview();
+      }
+
       function validatePhone(el) { el.value = el.value.replace(/[^0-9]/g, "").slice(0, 10); }
       function updateDeposit() { dom.inputs.deposit.value = dom.inputs.loc.value === "onsite" ? 1000 : 500; }
 
       function generateData() {
-        const i = dom.inputs; const [y, m, d] = i.date.value.split("-"); const ds = `${d}/${m}/${y}`;
-        let t = i.lang.value === "th" ? `ยืนยันการจอง💓\nมัดจำ ${i.deposit.value} บาท\n\nชื่อ: ${i.name.value || "..."}\nเบอร์: ${i.phone.value || "..."}\nบริการ: ${i.service.value || "ต่อขนตา"}\nวันที่: ${ds}\nเวลา: ${i.time.value || "--:--"}\n\n` : `Confirm Booking💓\nDeposit: ${i.deposit.value} THB\n\nName: ${i.name.value || "..."}\nPhone: ${i.phone.value || "..."}\nService: ${i.service.value || "ต่อขนตา"}\nDate: ${ds}\nTime: ${i.time.value || "--:--"}\n\n`;
-        t += i.loc.value === "onsite" ? (i.lang.value === "th" ? "- เวลาอาจคลาดเคลื่อนตามการจราจรค่า🙏\n🥰 แล้วพบกันค่า 🫶💖" : "- Traffic may affect time ka🙏\n🥰 See you soon! 🫶💖") : (i.lang.value === "th" ? "- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ🥰 แล้วพบกันนะค่า🫶💖" : "- Room 964 ka\n- Wait at Lobby ka💖\n- Late max 15 mins ka🫶💖");
-        return { text: t, calLine: `${i.name.value} | ${i.platform.value} | ${i.phone.value} | ${i.price.value || "ราคา"}(มัดจำ${i.deposit.value}) | ${i.service.value || "ต่อขนตา"}`, dateInput: i.date.value, time: i.time.value };
+        const i = dom.inputs;
+        const [y, m, d] = i.date.value.split("-");
+        const ds = `${d}/${m}/${y}`;
+        let t = i.lang.value === "th"
+            ? `ยืนยันการจอง💓\nมัดจำ ${i.deposit.value} บาท\n\nชื่อ: คุณ${i.name.value || "..."}\nเบอร์: ${i.phone.value || "..."}\nบริการ: ${i.service.value || "ต่อขนตา"}\nวันที่: ${ds}\nเวลา: ${i.time.value || "--:--"}\n\n`
+            : `Confirm Booking💓\nDeposit: ${i.deposit.value} THB\n\nName: ${i.name.value || "..."}\nPhone: ${i.phone.value || "..."}\nService: ${i.service.value || "ต่อขนตา"}\nDate: ${ds}\nTime: ${i.time.value || "--:--"}\n\n`;
+
+        t += i.loc.value === "onsite"
+            ? (i.lang.value === "th" ? "- เวลาอาจคลาดเคลื่อนตามการจราจรค่า🙏\n🥰 แล้วพบกันค่า 🫶💖" : "- Traffic may affect time ka🙏\n🥰 See you soon! 🫶💖")
+            : (i.lang.value === "th" ? "- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ🥰 \n\nแล้วพบกันนะค่า🫶💖" : "- Room 964 ka\n- Wait at Lobby ka💖\n- Late max 15 mins ka🫶💖");
+
+        return {
+          text: t,
+          calLine: `${i.name.value} | ${i.platform.value} | ${i.phone.value} | ${i.price.value || "ราคา"}(มัดจำ${i.deposit.value}) | ${i.service.value || "ต่อขนตา"}`,
+          dateInput: i.date.value,
+          time: i.time.value,
+        };
       }
 
       function updatePreview() { dom.preview.innerText = generateData().text; }
-      async function generateAndCopy() { if (dom.inputs.phone.value.length !== 10) return alert("เบอร์โทรไม่ครบ"); await navigator.clipboard.writeText(generateData().text); alert("คัดลอกแล้ว!"); }
+
+      async function generateAndCopy() {
+        await navigator.clipboard.writeText(generateData().text);
+        alert("คัดลอกแล้ว!");
+      }
+
+      async function copyFromHistory(fullText) {
+        await navigator.clipboard.writeText(fullText);
+        alert("คัดลอกแล้ว!");
+      }
 
       async function sendToCalendar() {
-        if (dom.inputs.phone.value.length !== 10) return alert("เบอร์โทรไม่ครบ");
-        dom.btnSave.innerHTML = '<div class="fast-loader mx-auto"></div>'; dom.btnSave.disabled = true;
-        const d = generateData(); saveToHistory(d);
-        const fd = new FormData(); fd.append("date", d.dateInput); fd.append("time", d.time); fd.append("calendarLine", d.calLine);
-        try { await fetch(scriptURL, { method: "POST", body: fd, mode: "no-cors" }); alert("สำเร็จ!"); delete queueCache[d.dateInput]; location.reload(); } 
-        catch (e) { alert("ล้มเหลว"); dom.btnSave.innerText = "ลงปฏิทิน & บันทึก 🗓️"; dom.btnSave.disabled = false; }
-      }
-
-      async function fetchQueue(f) {
-        const dt = document.getElementById("queueDateFilter").value;
-        if (queueCache[dt] && !f) return renderQueue(queueCache[dt]);
-        dom.queueList.innerHTML = '<div class="flex justify-center py-10"><div class="fast-loader"></div></div>';
+        dom.btnSave.innerHTML = '<div class="fast-loader mx-auto"></div>';
+        dom.btnSave.disabled = true;
+        const d = generateData();
+        saveToHistory(d);
+        const fd = new FormData();
+        fd.append("date", d.dateInput);
+        fd.append("time", d.time);
+        fd.append("calendarLine", d.calLine);
         try {
-          const r = await fetch(`${scriptURL}?action=getQueue&date=${dt}&_=${Date.now()}`);
-          const data = await r.json(); queueCache[dt] = data; renderQueue(data);
-        } catch (e) { dom.queueList.innerHTML = "Error"; }
-      }
-
-      function renderQueue(data) {
-        if (!data || data.length === 0) { 
-          dom.queueList.innerHTML = '<p class="text-center py-10 text-gray-400 text-xs">ไม่มีคิวงาน</p>'; 
-          return; 
+          await fetch(scriptURL, { method: "POST", body: fd, mode: "no-cors" });
+          alert("สำเร็จ!");
+          location.reload();
+        } catch (e) {
+          alert("ล้มเหลว");
+          dom.btnSave.innerText = "ลงปฏิทิน & บันทึก 🗓️";
+          dom.btnSave.disabled = false;
         }
-        
-        dom.queueList.innerHTML = data.map((item, i) => {
-          const isDone = item.status === "DONE"; 
-          // แยกข้อมูลตามรูปแบบเดิม: ชื่อ | แพลตฟอร์ม | เบอร์ | ราคา(มัดจำ) | บริการ
-          const parts = item.title.split(" | "); 
-          
-          return `<div class="queue-item overflow-hidden transition-all ${isDone ? "bg-gray-50 opacity-60" : "bg-white"}">
-            <div onclick="toggleAccordion('desc-${i}')" class="p-4 flex justify-between items-center cursor-pointer active:bg-pink-50">
-              <div class="flex gap-3 items-center overflow-hidden">
-                <div class="${isDone ? "text-gray-400 bg-gray-200" : "text-pink-600 bg-pink-50"} font-bold text-xs p-2 rounded-xl min-w-[55px] text-center">
-                  ${item.startTime}
-                </div>
-                <div class="overflow-hidden">
-                  <div class="text-gray-800 font-bold text-sm truncate ${isDone ? "line-through" : ""}">
-                    ${parts[0] || "Unknown"}
-                  </div>
-                  <div class="text-[10px] text-gray-400 truncate w-full max-w-[150px]">
-                    ${item.title}
-                  </div>
-                </div>
-              </div>
-              <button onclick="event.stopPropagation(); toggleStatus('${item.id}', '${item.status}')" class="p-2 rounded-full ${isDone ? "bg-green-500 text-white" : "bg-pink-100 text-pink-500"}">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                </svg>
-              </button>
-            </div>
-            
-            <div id="desc-${i}" class="hidden bg-pink-200/20 border-t border-dashed border-pink-100 p-4">
-              <div class="grid grid-cols-2 gap-3 text-[11px]">
-                <div class="bg-white p-2 rounded-lg border border-pink-50">
-                  <span class="text-gray-400 block text-[9px]">ชื่อ/แพลตฟอร์ม</span>
-                  <span class="text-gray-700 font-bold">${parts[0] || "-"} (${parts[1] || "-"})</span>
-                </div>
-                <div class="bg-white p-2 rounded-lg border border-pink-50">
-                  <span class="text-gray-400 block text-[9px]">เบอร์โทรศัพท์</span>
-                  <span class="text-gray-700 font-bold">${parts[2] || "-"}</span>
-                </div>
-                <div class="bg-white p-2 rounded-lg border border-pink-50">
-                  <span class="text-gray-400 block text-[9px]">ราคา/มัดจำ</span>
-                  <span class="text-pink-600 font-bold">${parts[3] || "-"}</span>
-                </div>
-                <div class="bg-white p-2 rounded-lg border border-pink-50">
-                  <span class="text-gray-400 block text-[9px]">บริการที่ได้รับ</span>
-                  <span class="text-gray-700 font-bold">${parts[4] || "-"}</span>
-                </div>
-              </div>
-              <div class="mt-2 bg-white p-2 rounded-lg border border-pink-50">
-                <span class="text-gray-400 block text-[9px]">หมายเหตุ (Calendar Description)</span>
-                <span class="text-gray-600 text-[10px]">${item.description || "-"}</span>
-              </div>
-            </div>
-          </div>`;
-        }).join("");
-      }
-      
-      function toggleAccordion(id) { document.getElementById(id).classList.toggle("hidden"); }
-      async function toggleStatus(id, s) {
-        const fd = new FormData(); fd.append("action", "updateStatus"); fd.append("eventId", id); fd.append("status", s === 'DONE' ? '[WAIT]' : '[DONE]');
-        await fetch(scriptURL, { method: "POST", body: fd, mode: "no-cors" }); fetchQueue(true);
       }
 
       function saveToHistory(d) {
         let h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        h.unshift({ name: dom.inputs.name.value, phone: dom.inputs.phone.value, locType: dom.inputs.loc.value, line: d.calLine });
+        h.unshift({
+          name: dom.inputs.name.value,
+          phone: dom.inputs.phone.value,
+          locType: dom.inputs.loc.value,
+          line: d.calLine,
+          fullText: d.text, // บันทึกข้อความเต็มไว้ใช้ก๊อปปี้ภายหลัง
+          time: d.time // 👈 เพิ่มบรรทัดนี้เพื่อเก็บเวลา
+        });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(h.slice(0, 100)));
       }
 
       function loadHistory() {
         const h = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-        dom.historyList.innerHTML = h.length ? h.map(i => `<div class="p-3 bg-pink-50 rounded-xl text-[11px] flex justify-between"><span><b>${i.name}</b> | ${i.line}</span><button onclick="navigator.clipboard.writeText('${i.line}'); alert('คัดลอกแล้ว!')">📋</button></div>`).join("") : "ไม่มีประวัติ";
+        dom.historyList.innerHTML = h.length
+          ? h.map((i) => `
+            <div class="p-3 bg-pink-50 rounded-xl flex justify-between items-center text-xs">
+              <div class="flex-1 pr-2">
+                <div class="font-bold text-pink-600 mb-0.5">${i.time || '--:--'}</div>
+                <div class="text-slate-500 text-[10px] truncate max-w-[200px]">${i.line}</div>
+              </div>
+              <button onclick="copyFromHistory(\`${i.fullText}\`)" class="bg-white p-2.5 rounded-lg shadow-sm border border-pink-100 active:bg-pink-100 transition-colors">
+                📋
+              </button>
+            </div>
+          `).join("")
+          : "<div class='text-center py-5 text-gray-400 text-sm'>ไม่มีประวัติ</div>";
       }
 
-      function clearHistory() { if (confirm("ล้างประวัติ?")) { localStorage.removeItem(STORAGE_KEY); loadHistory(); } }
+      function clearHistory() {
+        if (confirm("ล้างประวัติ?")) {
+          localStorage.removeItem(STORAGE_KEY);
+          loadHistory();
+        }
+      }
     </script>
   </body>
 </html>
