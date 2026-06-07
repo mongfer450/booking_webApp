@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Hello.mirilash — Smart Booking</title>
@@ -395,10 +398,6 @@
         <div class="cal-preview-desc" id="copiedText">—</div>
       </div>
     </div>
-    <div class="action-row">
-      <button class="action-btn" onclick="shareMsg()">📤 แชร์ LINE</button>
-      <button class="action-btn" onclick="openCal()">🗓️ ดู Calendar</button>
-    </div>
     <button class="close-btn" onclick="closeSuccess()">เสร็จสิ้น ✓</button>
   </div>
 </div>
@@ -697,24 +696,6 @@
     document.getElementById('errPrice').classList.remove('show');
     document.getElementById('inputDeposit').value = '';
     updateStep1CTA();
-  }
-
-  function shareMsg() {
-    if (_lastMsg && navigator.share) {
-      navigator.share({ text: _lastMsg }).catch(()=>{});
-    } else if (_lastMsg) {
-      navigator.clipboard.writeText(_lastMsg).then(()=>alert('คัดลอกข้อความแล้ว นำไปวางใน LINE ได้เลย'));
-    }
-  }
-
-  function openCal() {
-    const dateStr = toDateStr(selectedDate).replace(/-/g,'');
-    const [h,m]   = (selectedTime||'09:00').split(':');
-    const endH    = String(parseInt(h)+1).padStart(2,'0');
-    const name    = (document.getElementById('inputName')?.value||'').trim();
-    const svc     = [...document.querySelectorAll('.chip.selected')].map(c=>c.textContent.replace(/[👁️✨〰️🔖➕]\s*/gu,'')).join(', ');
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('✨ '+name+' · '+svc)}&dates=${dateStr}T${h}${m}00/${dateStr}T${endH}${m}00`;
-    window.open(url, '_blank');
   }
 
   // ── Smart Parse ──
