@@ -204,6 +204,19 @@
   .slots-scroll { max-height:220px; overflow-y:auto; margin-bottom:6px; scrollbar-width:thin; scrollbar-color:var(--rose-light) transparent; }
   .slots-scroll::-webkit-scrollbar { width:3px; }
   .slots-scroll::-webkit-scrollbar-thumb { background:var(--rose-light); border-radius:2px; }
+  /* MONTH NAV */
+  .month-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .month-nav-btn { width:32px; height:32px; border-radius:50%; border:1.5px solid var(--rose-light); background:var(--surface); color:var(--rose-deep); font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; user-select:none; }
+  .month-nav-btn:active { background:var(--blush); transform:scale(0.92); }
+  .month-nav-label { font-family:'Kanit',sans-serif; font-size:14px; font-weight:600; color:var(--text); }
+  /* OTHER DATE BTN */
+  .other-date-wrap { display:flex; justify-content:flex-end; margin-top:-6px; margin-bottom:14px; }
+  .other-date-btn { display:flex; align-items:center; gap:4px; background:var(--blush); border:1.5px solid var(--rose-light); color:var(--rose-deep); font-family:'Kanit',sans-serif; font-size:12px; font-weight:500; padding:5px 12px; border-radius:20px; cursor:pointer; transition:all 0.2s; user-select:none; }
+  .other-date-btn:active { opacity:0.7; }
+  /* COPY BTN */
+  .copy-msg-btn { width:100%; padding:12px; border-radius:12px; border:1.5px solid var(--rose-light); background:var(--surface); font-family:'Kanit',sans-serif; font-size:14px; font-weight:600; color:var(--rose-deep); cursor:pointer; transition:all 0.2s; margin-bottom:10px; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .copy-msg-btn:active { background:var(--blush); transform:scale(0.98); }
+  .copy-msg-btn.copied { background:var(--green-light); border-color:var(--green); color:var(--green); }
 </style>
 </head>
 <body>
@@ -244,7 +257,18 @@
     <div id="step1">
       <p class="section-title">เลือกวันที่</p>
       <p class="section-sub">แตะวันและช่วงเวลาที่ต้องการ</p>
+      <!-- Month navigator -->
+      <div class="month-nav">
+        <button class="month-nav-btn" onclick="prevMonth()">‹</button>
+        <span class="month-nav-label" id="monthLabel">—</span>
+        <button class="month-nav-btn" onclick="nextMonth()">›</button>
+      </div>
       <div class="cal-strip" id="calStrip"></div>
+      <!-- อื่นๆ date picker -->
+      <div class="other-date-wrap">
+        <button class="other-date-btn" onclick="document.getElementById('datePicker').showPicker?.() || document.getElementById('datePicker').click()">📅 อื่นๆ</button>
+        <input type="date" id="datePicker" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;" min="" onchange="applyDatePicker(this.value)">
+      </div>
       <div class="slots-label">ช่วงเวลา (8:00 – 23:00)</div>
       <div class="slots-grid" id="slotsGrid"></div>
       <!-- Manual time -->
@@ -256,9 +280,17 @@
           <select class="manual-sel" id="manualMn">
             <option value="">นาที</option>
             <option value="00">00</option>
+            <option value="05">05</option>
+            <option value="10">10</option>
             <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="25">25</option>
             <option value="30">30</option>
+            <option value="35">35</option>
+            <option value="40">40</option>
             <option value="45">45</option>
+            <option value="50">50</option>
+            <option value="55">55</option>
           </select>
           <button class="manual-set-btn" onclick="applyManualTime()">ตั้งเวลา</button>
         </div>
@@ -388,16 +420,12 @@
       </div>
     </div>
     <div class="copied-text">
-      <div class="copied-label">🗓️ Google Calendar Event (คัดลอกแล้ว)</div>
+      <div class="copied-label">📋 ข้อความยืนยันการจอง</div>
       <div class="cal-preview">
-        <div class="cal-preview-row">
-          <span class="cal-preview-key">ชื่อ event</span>
-          <span class="cal-preview-val" id="calEventTitle">—</span>
-        </div>
-        <div class="cal-preview-sep"></div>
         <div class="cal-preview-desc" id="copiedText">—</div>
       </div>
     </div>
+    <button class="copy-msg-btn" id="copyMsgBtn" onclick="copyMsg()">📋 คัดลอกข้อความ</button>
     <button class="close-btn" onclick="closeSuccess()">เสร็จสิ้น ✓</button>
   </div>
 </div>
@@ -417,28 +445,85 @@
     return `วัน${thDaysFull[d.getDay()]}ที่ ${d.getDate()} ${thMonths[d.getMonth()]} ${d.getFullYear()+543}`;
   }
 
-  // ── Build Calendar Strip ──
+  // ── Calendar state ──
   const today = new Date();
-  selectedDate = today;
-  const calStrip = document.getElementById('calStrip');
-  const hasSlotSet = new Set([0,1,2,4,5,7,8,9,11]);
-  for (let i = 0; i < 14; i++) {
-    const d = new Date(today); d.setDate(today.getDate() + i);
-    const el = document.createElement('div');
-    el.className = `cal-day${i===0?' today selected':''}${hasSlotSet.has(i)?' has-slots':''}`;
-    el.innerHTML = `<div class="day-name">${thDaysShort[d.getDay()]}</div><div class="day-num">${d.getDate()}</div><div class="day-dot"></div>`;
-    el.dataset.ts = d.getTime();
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.cal-day').forEach(x => x.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedDate = new Date(+el.dataset.ts);
-      selectedTime = null;
-      document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
-      updateStep1CTA();
-      loadSlots(selectedDate);
-    });
-    calStrip.appendChild(el);
+  let viewYear  = today.getFullYear();
+  let viewMonth = today.getMonth(); // 0-based
+
+  // ── Set date picker min ──
+  const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(today);
+  document.getElementById('datePicker').min = todayStr;
+
+  // ── Build Calendar Strip for current viewMonth/viewYear ──
+  function buildCalStrip() {
+    const thMonthsFull = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+    document.getElementById('monthLabel').textContent = `${thMonthsFull[viewMonth]} ${viewYear + 543}`;
+
+    const strip = document.getElementById('calStrip');
+    strip.innerHTML = '';
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(viewYear, viewMonth, d);
+      const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const isToday = date.toDateString() === today.toDateString();
+      const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+
+      const el = document.createElement('div');
+      el.className = `cal-day${isToday ? ' today' : ''}${isSelected ? ' selected' : ''}${isPast ? ' past' : ''}`;
+      el.innerHTML = `<div class="day-name">${thDaysShort[date.getDay()]}</div><div class="day-num">${d}</div><div class="day-dot"></div>`;
+      el.dataset.ts = date.getTime();
+
+      if (!isPast) {
+        el.addEventListener('click', () => {
+          selectedDate = new Date(+el.dataset.ts);
+          selectedTime = null;
+          document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+          buildCalStrip(); // re-render to update selected
+          updateStep1CTA();
+          loadSlots(selectedDate);
+        });
+      } else {
+        el.style.opacity = '0.35';
+        el.style.cursor = 'default';
+      }
+      strip.appendChild(el);
+    }
+
+    // scroll to selected or today
+    setTimeout(() => {
+      const sel = strip.querySelector('.selected') || strip.querySelector('.today');
+      if (sel) sel.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }, 50);
   }
+
+  function prevMonth() {
+    viewMonth--;
+    if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+    buildCalStrip();
+  }
+  function nextMonth() {
+    viewMonth++;
+    if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+    buildCalStrip();
+  }
+
+  // ── Apply date from picker ──
+  function applyDatePicker(val) {
+    if (!val) return;
+    const [y, m, d] = val.split('-').map(Number);
+    selectedDate = new Date(y, m - 1, d);
+    viewYear  = y;
+    viewMonth = m - 1;
+    selectedTime = null;
+    buildCalStrip();
+    updateStep1CTA();
+    loadSlots(selectedDate);
+  }
+
+  // ── Init ──
+  selectedDate = today;
+  buildCalStrip();
 
   // ── Build Time Slots (08:00–23:00) ──
   function buildSlots(bookedSet = new Set()) {
@@ -475,7 +560,7 @@
       const json = await res.json();
       buildSlots(new Set(json.booked || []));
     } catch(e) {
-      buildSlots(); // ถ้า fetch fail ให้แสดงทุก slot ว่าง
+      buildSlots();
     }
   }
   loadSlots(today);
@@ -522,7 +607,6 @@
     document.getElementById('locIcon').textContent = currentLoc === 'ใน' ? '🏠' : '🚗';
     document.getElementById('locText').textContent = currentLoc === 'ใน' ? 'ในสถานที่' : 'นอกสถานที่';
     document.getElementById('confirmLoc').textContent = currentLoc === 'ใน' ? '🏠 ในสถานที่' : '🚗 นอกสถานที่';
-    // auto-fill deposit (แก้ไขเองได้)
     const dep = document.getElementById('inputDeposit');
     if (dep) dep.value = currentLoc === 'ใน' ? '500' : '1000';
   }
@@ -613,7 +697,7 @@
     return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(d);
   }
 
-  // ── CONFIRM BOOKING — เชื่อมกับ Apps Script จริง ──
+  // ── CONFIRM BOOKING ──
   async function confirmBooking() {
     if (!validateStep2()) return;
 
@@ -622,7 +706,6 @@
     btn.textContent = 'กำลังบันทึก...';
     btn.disabled = true;
 
-    // ── เตรียมข้อมูล ──
     const name     = (document.getElementById('inputName')?.value || '').trim();
     const phone    = (document.getElementById('inputPhone')?.value || '').trim();
     const price    = document.getElementById('inputPrice').value.trim();
@@ -630,55 +713,76 @@
     const services = [...document.querySelectorAll('.chip.selected')].map(c => c.textContent.replace(/[👁️✨〰️🔖➕]\s*/gu,'')).join(', ');
     const locLabel = currentLoc === 'ใน' ? 'ในสถานที่' : 'นอกสถานที่';
 
-    const dateStr  = toDateStr(selectedDate);          // YYYY-MM-DD
-    const timeStr  = selectedTime;                     // HH:MM
+    const dateStr  = toDateStr(selectedDate);
+    const timeStr  = selectedTime;
     const priceNum = Number((price||'0').replace(/,/g,''));
     const depNum   = Number(deposit || 0);
     const priceLabel = depNum > 0 ? `${priceNum}(มัดจำ${depNum})` : `${priceNum}`;
 
-    // format สำหรับ Apps Script
     const calendarLine = `${name} | ${phone} | ${priceLabel} | ${services||'บริการ'} | ${locLabel}`;
 
-    // ── Show overlay ──
     document.getElementById('calConnecting').style.display = 'flex';
     document.getElementById('calResult').style.display = 'none';
     document.getElementById('successOverlay').classList.add('show');
 
-    // ── Call Apps Script (background, no-cors) ──
     try {
       const fd = new FormData();
       fd.append('date', dateStr);
       fd.append('time', timeStr);
       fd.append('calendarLine', calendarLine);
       await fetch(SCRIPT_URL, { method: 'POST', body: fd, mode: 'no-cors' });
-    } catch(e) {
-      // no-cors fetch ไม่มี error จริง — proceed ต่อ
-    }
+    } catch(e) {}
 
-    // ── แสดงผลสำเร็จ (1.5s เพื่อ UX) ──
     setTimeout(() => {
       document.getElementById('calConnecting').style.display = 'none';
       document.getElementById('calResult').style.display = 'flex';
 
       const serviceShort = services || 'ต่อขนตา';
-      // calendar event title: ชื่อ | บริการ | สถานที่
       const calTitle = `${name} | ${serviceShort} | ${locLabel}`;
 
-      // DD/MM/YYYY format
       const dd   = String(selectedDate.getDate()).padStart(2,'0');
       const mm   = String(selectedDate.getMonth()+1).padStart(2,'0');
       const yyyy = selectedDate.getFullYear();
       const dateFmt = `${dd}/${mm}/${yyyy}`;
 
-      const msg = `:ยืนยันการจอง\nมัดจำ ${depNum > 0 ? depNum.toLocaleString() : 0} บาท\n\nชื่อ: คุณ${name}\nเบอร์: ${phone}\nบริการ: ${serviceShort}\nวันที่: ${dateFmt}\nเวลา: ${timeStr}\n\n- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ \n\nแล้วพบกันนะค่า`;
+      const depLine = depNum > 0 ? `มัดจำ ${depNum.toLocaleString()} บาท` : 'มัดจำ 0 บาท';
+
+      const msg = `:ยืนยันการจอง\n${depLine}\n\nชื่อ: คุณ${name}\nเบอร์: ${phone}\nบริการ: ${serviceShort}\nวันที่: ${dateFmt}\nเวลา: ${timeStr}\n\n- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ \n\nแล้วพบกันนะค่า`;
 
       document.getElementById('calResultSub').textContent = `${dateLabel(selectedDate)} เวลา ${timeStr} น.`;
-      document.getElementById('calEventTitle').textContent = calTitle;
+      document.getElementById('calEventTitle') && (document.getElementById('calEventTitle').textContent = calTitle);
       document.getElementById('copiedText').textContent = msg;
       _lastMsg = msg;
 
+      // auto-copy
       if (navigator.clipboard) navigator.clipboard.writeText(msg).catch(()=>{});
     }, 1500);
+  }
+
+  // ── Copy message button ──
+  function copyMsg() {
+    if (!_lastMsg) return;
+    const btn = document.getElementById('copyMsgBtn');
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(_lastMsg).then(() => {
+        btn.textContent = '✓ คัดลอกแล้ว!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 คัดลอกข้อความ'; btn.classList.remove('copied'); }, 2000);
+      }).catch(() => fallbackCopy());
+    } else { fallbackCopy(); }
+  }
+
+  function fallbackCopy() {
+    const ta = document.createElement('textarea');
+    ta.value = _lastMsg;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('copyMsgBtn');
+    btn.textContent = '✓ คัดลอกแล้ว!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 คัดลอกข้อความ'; btn.classList.remove('copied'); }, 2000);
   }
 
   function closeSuccess() {
@@ -695,6 +799,9 @@
     document.getElementById('inputPrice').classList.remove('error');
     document.getElementById('errPrice').classList.remove('show');
     document.getElementById('inputDeposit').value = '';
+    const copyBtn = document.getElementById('copyMsgBtn');
+    copyBtn.textContent = '📋 คัดลอกข้อความ';
+    copyBtn.classList.remove('copied');
     updateStep1CTA();
   }
 
