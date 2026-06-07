@@ -517,12 +517,15 @@
     }
   }
 
-  // ── Toggle Location ──
+  // ── Toggle Location + auto-fill deposit ──
   function toggleLoc() {
     currentLoc = currentLoc === 'ใน' ? 'นอก' : 'ใน';
     document.getElementById('locIcon').textContent = currentLoc === 'ใน' ? '🏠' : '🚗';
     document.getElementById('locText').textContent = currentLoc === 'ใน' ? 'ในสถานที่' : 'นอกสถานที่';
     document.getElementById('confirmLoc').textContent = currentLoc === 'ใน' ? '🏠 ในสถานที่' : '🚗 นอกสถานที่';
+    // auto-fill deposit (แก้ไขเองได้)
+    const dep = document.getElementById('inputDeposit');
+    if (dep) dep.value = currentLoc === 'ใน' ? '500' : '1000';
   }
 
   // ── Chip toggle ──
@@ -581,6 +584,9 @@
     document.getElementById('progressFill').classList.add('full');
     document.getElementById('confirmDateTime').textContent = `${dateLabel(selectedDate)} · ${selectedTime} น.`;
     document.getElementById('confirmLoc').textContent = currentLoc === 'ใน' ? '🏠 ในสถานที่' : '🚗 นอกสถานที่';
+    // auto-fill deposit ตามสถานที่
+    const dep = document.getElementById('inputDeposit');
+    if (dep && !dep.value) dep.value = currentLoc === 'ใน' ? '500' : '1000';
     const btn = document.getElementById('ctaBtn');
     btn.disabled = false;
     btn.textContent = 'ลงคิว';
@@ -631,8 +637,8 @@
     const depNum   = Number(deposit || 0);
     const priceLabel = depNum > 0 ? `${priceNum}(มัดจำ${depNum})` : `${priceNum}`;
 
-    // format สำหรับ Apps Script (เหมือน webapp เดิม)
-    const calendarLine = `${name} | LINE | ${phone} | ${priceLabel} | ${services||'บริการ'}`;
+    // format สำหรับ Apps Script
+    const calendarLine = `${name} | ${phone} | ${priceLabel} | ${services||'บริการ'} | ${locLabel}`;
 
     // ── Show overlay ──
     document.getElementById('calConnecting').style.display = 'flex';
@@ -655,26 +661,20 @@
       document.getElementById('calConnecting').style.display = 'none';
       document.getElementById('calResult').style.display = 'flex';
 
-      const dtLabel    = `${dateLabel(selectedDate)} เวลา ${timeStr} น.`;
-      const serviceShort = services || 'บริการ';
-      const locShort   = currentLoc === 'ใน' ? '🏠ใน' : '🚗นอก';
-      const calTitle   = `✨ ${name} · ${serviceShort} · ฿${priceNum.toLocaleString()}${depNum>0?` (มัดจำ ฿${depNum.toLocaleString()})`:''} · ${locShort}`;
+      const serviceShort = services || 'ต่อขนตา';
+      // calendar event title: ชื่อ | บริการ | สถานที่
+      const calTitle = `${name} | ${serviceShort} | ${locLabel}`;
 
-      const calDesc = [
-        `👤 ${name}`,
-        `📞 ${phone}`,
-        priceNum > 0 ? `💰 ฿${priceNum.toLocaleString()}` : null,
-        depNum  > 0 ? `💵 มัดจำ ฿${depNum.toLocaleString()}` : null,
-        `📍 ${locLabel}`,
-        services ? `🪄 ${serviceShort}` : null,
-        ``,
-        `— Hello.mirilash —`,
-      ].filter(l => l !== null).join('\n');
+      // DD/MM/YYYY format
+      const dd   = String(selectedDate.getDate()).padStart(2,'0');
+      const mm   = String(selectedDate.getMonth()+1).padStart(2,'0');
+      const yyyy = selectedDate.getFullYear();
+      const dateFmt = `${dd}/${mm}/${yyyy}`;
 
-      document.getElementById('calResultSub').textContent = dtLabel;
+      const msg = `:ยืนยันการจอง\nมัดจำ ${depNum > 0 ? depNum.toLocaleString() : 0} บาท\n\nชื่อ: คุณ${name}\nเบอร์: ${phone}\nบริการ: ${serviceShort}\nวันที่: ${dateFmt}\nเวลา: ${timeStr}\n\n- หากนำรถมาแจ้งเลขห้อง 964 ค่า\n- ถึงแล้วนั่งรอ lobby เดี๋ยวมีพี่ช่างมารับค่า\n- Oops! ถ้าเลทมาไม่เกิน 15 นาที นะคะ \n\nแล้วพบกันนะค่า`;
+
+      document.getElementById('calResultSub').textContent = `${dateLabel(selectedDate)} เวลา ${timeStr} น.`;
       document.getElementById('calEventTitle').textContent = calTitle;
-
-      const msg = `📌 CALENDAR EVENT\n━━━━━━━━━━━━━━━━\nชื่อ event: ${calTitle}\nรายละเอียด:\n${calDesc}`;
       document.getElementById('copiedText').textContent = msg;
       _lastMsg = msg;
 
