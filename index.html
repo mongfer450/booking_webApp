@@ -1,3 +1,4 @@
+<!-- https://script.google.com/macros/s/AKfycbx0pXIgUqNOLFgcd7xWKQpCAUZXiaNYKHhxrwBe5Z_QnquFykvuHGTREcX_jOZ3nPot/exec -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -429,7 +430,7 @@
 </div>
 <script>
   // ── CONFIG ──
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz02nVmU0vF0SsfXyGOzwvlrlaeF5AuujVFVeCEYIM-OgHVLoSBd9giEWAOG0b8yS0/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0pXIgUqNOLFgcd7xWKQpCAUZXiaNYKHhxrwBe5Z_QnquFykvuHGTREcX_jOZ3nPot/exec";
 
   // ── State ──
   let selectedDate = null, selectedTime = null, currentStep = 1, currentLoc = 'ใน';
@@ -556,7 +557,19 @@
       const dateStr = toDateStr(date);
       const res = await fetch(`${SCRIPT_URL}?date=${dateStr}`);
       const json = await res.json();
-      buildSlots(new Set(json.booked || []));
+      const bookedSet = new Set();
+      (json.booked || []).forEach(ev => {
+        // รองรับทั้ง format เก่า (string) และใหม่ ({start,end})
+        if (typeof ev === 'string') { bookedSet.add(ev); return; }
+        const [sh] = ev.start.split(':').map(Number);
+        const [eh, em] = ev.end.split(':').map(Number);
+        const endMins = eh * 60 + em;
+        for (let h = sh; h <= 23; h++) {
+          if (h * 60 >= endMins) break;
+          bookedSet.add(`${String(h).padStart(2,'0')}:00`);
+        }
+      });
+      buildSlots(bookedSet);
     } catch(e) {
       buildSlots();
     }
