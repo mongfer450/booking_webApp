@@ -528,9 +528,13 @@
   function buildSlots(bookedSet = new Set()) {
     const grid = document.getElementById('slotsGrid');
     grid.innerHTML = '';
+    // คำนวณชั่วโมงปัจจุบันใน Bangkok timezone
+    const nowBKK = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" }));
+    const isToday = selectedDate && toDateStr(selectedDate) === toDateStr(new Date());
+    const currentHour = isToday ? nowBKK.getHours() : -1;
     for (let h = 8; h <= 23; h++) {
       const tStr = `${String(h).padStart(2,'0')}:00`;
-      const booked = bookedSet.has(tStr);
+      const booked = bookedSet.has(tStr) || h < currentHour;
       const el = document.createElement('div');
       el.className = `slot${booked ? ' booked' : ''}`;
       el.innerHTML = `<div class="slot-time">${tStr}</div><div class="slot-status">${booked ? '✕ จอง' : '● ว่าง'}</div>`;
